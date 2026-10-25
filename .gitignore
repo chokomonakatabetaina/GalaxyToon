@@ -1,0 +1,3 @@
+# 動画は YouTube に置く(GitHub は 1 ファイル 100MB まで)
+*.mp4
+*.mov

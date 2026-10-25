@@ -1,0 +1,22 @@
+{
+  "name": "com.matechagame.galaxytoon",
+  "version": "1.0.0",
+  "displayName": "GalaxyToon",
+  "description": "URP 用のトゥーンシェーダー。段影・リム・マットキャップ・輪郭線、瞳・頬染め・髪の影、濡れ・汗・液体・雨、ラメ・屈折、ディゾルブ・転送などを 1 つのシェーダーで扱えます。",
+  "unity": "6000.5",
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.5.0"
+  },
+  "keywords": [
+    "toon",
+    "shader",
+    "urp",
+    "anime"
+  ],
+  "author": {
+    "name": "@matechagame"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/chokomonakatabetaina/GalaxyToon#readme",
+  "licensesUrl": "https://github.com/chokomonakatabetaina/GalaxyToon/blob/main/LICENSE"
+}

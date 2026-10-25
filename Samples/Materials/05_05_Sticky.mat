@@ -1,0 +1,467 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 05_05_Sticky
+  m_Shader: {fileID: 4800000, guid: d9bfe0dfbdefc5140a42893ddeb65f31, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _GALAXY_FX
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 2000
+  stringTagMap:
+    RenderType: Opaque
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BaseMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Bump2Map:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Bump2Map_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DissolveNoise:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DissolveNoise_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emission2Map:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Emission2Map_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FaceSdfTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FaceSdfTex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FxMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FxMask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlitterMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GlitterMask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer1Mask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer1Mask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer1Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer1Tex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer2Mask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer2Mask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer2Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer2Tex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer3Mask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer3Mask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer3Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer3Tex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCap2Mask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCap2Mask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCap2Tex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCap2Tex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCapTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MatCapTex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OutlineWidthMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OutlineWidthMask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampIdMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampIdMap_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShadowRampTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShadowRampTex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShadowStrengthMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ShadowStrengthMask_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularRampTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecularRampTex_Stash:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AAStrength: 1
+    - _AdditionalLightStrength: 0
+    - _AlphaClip: 0
+    - _AmbientStrength: 0
+    - _AnimeEdgeWidth: 0.035
+    - _AnimeFlatLight: 0.8
+    - _AnimeFlatMip: 4
+    - _AnimeFlatNormal: 0.8
+    - _AnimeFlatTexture: 0
+    - _AnimeHardness: 0.85
+    - _AnimeMode: 0
+    - _AnimeNoGloss: 0.85
+    - _AnimeOutlinePixel: 0
+    - _AnimeShadowHue: -0.03
+    - _AnimeShadowSat: 0.35
+    - _AnimeShadowValue: 0.72
+    - _AnisoBlur: 0.1
+    - _AnisoBorder: 0.5
+    - _AnisoDirection: 1
+    - _AnisoShadowMask: 0.5
+    - _AnisoSharpness: 40
+    - _AnisoShift: 0
+    - _AnisoUseRamp: 0
+    - _BacklightBlur: 0.05
+    - _BacklightBorder: 0.35
+    - _BacklightDirectivity: 5
+    - _BacklightMainStrength: 0
+    - _BacklightViewStrength: 1
+    - _BakedSteps: 0
+    - _BangFadeMode: 0
+    - _BangFadeStrength: 0.6
+    - _BlushAmount: 0
+    - _BlushLines: 0
+    - _BlushSize: 0.06
+    - _BlushSoft: 0.7
+    - _Brightness: 1
+    - _Bump2Scale: 1
+    - _BumpScale: 1
+    - _Cull: 2
+    - _Cutoff: 0.5
+    - _DepthRim: 0
+    - _DirtAmount: 0
+    - _DirtReceive: 1
+    - _DirtScale: 12
+    - _DissolveAmount: 0
+    - _DissolveEdgeWidth: 0.05
+    - _DissolveInvert: 0
+    - _DissolveMode: 0
+    - _DissolveNoiseScale: 1
+    - _DissolveNoiseStrength: 0.5
+    - _DissolveStart: 0
+    - _DissolveWorld: 0
+    - _DstBlend: 0
+    - _Emission2Animate: 0
+    - _Emission2Blink: 0
+    - _EmissionAnimate: 0
+    - _EmissionBlink: 0
+    - _EyeHighlightSize: 0.2
+    - _EyeParallax: 0.4
+    - _EyeSparkleScale: 3
+    - _EyeSparkleSpeed: 1.5
+    - _EyeWet: 0
+    - _FaceShading: 0
+    - _FaceSphere: 0
+    - _FoamAmount: 0
+    - _FoamFlow: 0.15
+    - _FoamMerge: 0.6
+    - _FoamPop: 0.12
+    - _FoamReceive: 1
+    - _FoamScale: 18
+    - _FoamSize: 0.5
+    - _FxBump: 0.5
+    - _Gamma: 1
+    - _GlitterDensity: 0.6
+    - _GlitterScale: 300
+    - _GlitterShadowMask: 0.7
+    - _GlitterSharpness: 12
+    - _GlitterSize: 0.25
+    - _HairShadowBias: 0.3
+    - _HairShadowCast: 0
+    - _HairShadowDistance: 1.2
+    - _HairShadowReceive: 0
+    - _HairSway: 0
+    - _HairWet: 0
+    - _HairWetClumps: 40
+    - _HueShift: 0
+    - _Layer1Animate: 0
+    - _Layer1Blend: 0
+    - _Layer1Blink: 0
+    - _Layer1BlinkPhase: 0
+    - _Layer1Fade: 1
+    - _Layer1Unlit: 0
+    - _Layer2Animate: 0
+    - _Layer2Blend: 0
+    - _Layer2Blink: 0
+    - _Layer2BlinkPhase: 0
+    - _Layer2Fade: 1
+    - _Layer2Unlit: 0
+    - _Layer3Animate: 0
+    - _Layer3Blend: 0
+    - _Layer3Blink: 0
+    - _Layer3BlinkPhase: 0
+    - _Layer3Fade: 1
+    - _Layer3Unlit: 0
+    - _LightMaxLimit: 1
+    - _LightMinLimit: 0.05
+    - _LightSource: 0
+    - _LiquidAmount: 0.5
+    - _LiquidFlow: 0.05
+    - _LiquidGloss: 1.6
+    - _LiquidReceive: 1
+    - _LiquidScale: 25
+    - _LiquidViscosity: 0.9
+    - _MatCap2Blend: 0
+    - _MatCap2ShadowMask: 0
+    - _MatCapShadowMask: 0
+    - _Metallic: 0
+    - _MonochromeLighting: 0
+    - _NearFadeEnd: 0.3
+    - _NearFadeStart: 0.1
+    - _OcclusionStrength: 1
+    - _OutlineFixWidth: 0.5
+    - _OutlineLit: 1
+    - _OutlineSmoothNormal: 1
+    - _OutlineTexBlend: 0.5
+    - _OutlineWidth: 0.08
+    - _QueueOffset: 0
+    - _RainAmount: 0
+    - _RainFlowAmount: 1
+    - _RainReceive: 1
+    - _RainRipples: 1
+    - _RainScale: 8
+    - _RainSpeed: 1
+    - _RainSplash: 0
+    - _RampIdOn: 0
+    - _ReflectionSteps: 3
+    - _ReflectionStrength: 1
+    - _RefractionDispersion: 0.25
+    - _RefractionStrength: 0
+    - _RenderMode: 0
+    - _RimBlur: 0.65
+    - _RimBorder: 0.5
+    - _RimDepthThreshold: 0.1
+    - _RimDepthWidth: 1
+    - _RimFresnelPower: 3.5
+    - _RimShadowMask: 0.5
+    - _Saturation: 1
+    - _ScratchAmount: 0
+    - _ScratchScale: 12
+    - _SdfFollowHead: 0
+    - _Shadow2ndBlur: 0.1
+    - _Shadow2ndBorder: 0.3
+    - _Shadow3rdBlur: 0.1
+    - _Shadow3rdBorder: 0.15
+    - _ShadowBlur: 0.1
+    - _ShadowBorder: 0.5
+    - _ShadowRampRow: 0
+    - _ShadowRampRows: 1
+    - _ShadowReceive: 0
+    - _Smoothness: 0
+    - _SpecularBlur: 0.02
+    - _SpecularRampOn: 0
+    - _SpecularSize: 0.05
+    - _SrcBlend: 1
+    - _StencilComp: 8
+    - _StencilFail: 0
+    - _StencilPass: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 0
+    - _StencilWriteMask: 255
+    - _StencilZFail: 0
+    - _SweatAmount: 0
+    - _SweatFlow: 0
+    - _SweatReceive: 1
+    - _SweatScale: 35
+    - _SweatSize: 0.3
+    - _TriplanarBlend: 4
+    - _TriplanarScale: 1
+    - _UseDissolve: 0
+    - _UseEye: 0
+    - _UseFaceSdf: 0
+    - _UseFx: 1
+    - _UseNearFade: 0
+    - _UseTriplanar: 0
+    - _WetAmount: 0
+    - _WetDarken: 0.3
+    - _WetGloss: 0.6
+    - _WetReceive: 1
+    - _WetShrink: 0
+    - _WetSoak: 0
+    - _ZTest: 4
+    - _ZWrite: 1
+    m_Colors:
+    - _AnimeEdgeColor: {r: 1, g: 0.5, b: 0.41999996, a: 0.5}
+    - _AnisoColor: {r: 1, g: 1, b: 1, a: 0}
+    - _BacklightColor: {r: 1, g: 0.95, b: 0.9, a: 0}
+    - _BaseColor: {r: 0.18, g: 0.32, b: 0.68, a: 1}
+    - _BlushColor: {r: 1, g: 0.41999996, b: 0.47999996, a: 0.6}
+    - _BlushUV: {r: 0, g: 0, b: 0, a: 0}
+    - _DirtColor: {r: 0.11999995, g: 0.09999997, b: 0.089999996, a: 0.85}
+    - _DissolveDirection: {r: 0, g: 1, b: 0, a: 2}
+    - _DissolveEdgeColor: {r: 2, g: 1, b: 0.3, a: 1}
+    - _Emission2Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Emission2Scroll: {r: 0, g: 0, b: 0, a: 0}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionScroll: {r: 0, g: 0, b: 0, a: 0}
+    - _EyeHighlightColor: {r: 1, g: 1, b: 1, a: 0.9}
+    - _EyeHighlightPos: {r: -0.35, g: 0.4, b: 0.38, a: -0.32}
+    - _EyeRect1: {r: 0, g: 0, b: 0, a: 0}
+    - _EyeRect2: {r: 0, g: 0, b: 0, a: 0}
+    - _EyeSparkleColor: {r: 1, g: 1, b: 1, a: 0}
+    - _FaceCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _FaceForward: {r: 0, g: 0, b: 0, a: 0}
+    - _FaceRight: {r: 0, g: 0, b: 0, a: 0}
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 0.9}
+    - _GlitterColor: {r: 1, g: 1, b: 1, a: 0}
+    - _HairSwayOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _HairSwayPivot: {r: 0, g: 0, b: 0, a: 0}
+    - _HairSwayUp: {r: 0, g: 1, b: 0, a: 0}
+    - _Layer1Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Layer1Scroll: {r: 0, g: 0, b: 0, a: 0}
+    - _Layer2Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Layer2Scroll: {r: 0, g: 0, b: 0, a: 0}
+    - _Layer3Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Layer3Scroll: {r: 0, g: 0, b: 0, a: 0}
+    - _LiquidColor: {r: 0.95, g: 0.88, b: 0.7, a: 0.55}
+    - _LiquidFlowDir: {r: 0, g: -1, b: 0, a: 0}
+    - _MatCap2Color: {r: 1, g: 1, b: 1, a: 1}
+    - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0.24999997, g: 0.19999996, b: 0.24999997, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 0}
+    - _ScratchColor: {r: 0.85, g: 0.82, b: 0.78, a: 0.8}
+    - _Shadow2ndColor: {r: 0.68, g: 0.6, b: 0.74, a: 0}
+    - _Shadow3rdColor: {r: 0.5, g: 0.45, b: 0.6, a: 0}
+    - _ShadowColor: {r: 0.82, g: 0.76, b: 0.85, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
