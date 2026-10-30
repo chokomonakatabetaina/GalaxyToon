@@ -6,6 +6,7 @@ The tools in the **Tools > GalaxyToon** menu. They all run only in the Editor an
 
 | Tool | Menu item | Purpose | File |
 |---|---|---|---|
+| [Migrate to GalaxyToon](#migrate-to-galaxytoon) | GalaxyToon に移行 | Converts MToon, lilToon, UTS, Lit, and other materials | `GalaxyToonMigrator.cs` |
 | [Find Iris Area](#find-iris-area) | 瞳の範囲を探す | Sets the iris UV areas on the face material | `GalaxyToonEyeFinder.cs` |
 | [Find Cheek Positions](#find-cheek-positions) | 頬の位置を探す | Sets the cheek UV positions on the face material | `GalaxyToonEyeFinder.cs` |
 | [Create Normal Map](#create-normal-map) | ノーマルマップを作る | Creates a normal map from a texture | `GalaxyToonNormalBaker.cs` |
@@ -23,6 +24,49 @@ The tools in the **Tools > GalaxyToon** menu. They all run only in the Editor an
 For the Inspector (`GalaxyToonGUI.cs` / `GalaxyToonText.cs`), see [Inspector](inspector.md).
 
 ---
+
+## Migrate to GalaxyToon
+
+Converts materials from other shaders to `GalaxyShader/Toon` in one go. For a VRM (VRoid) character, select it and run the tool to also set up the face, eyes, outline, and hair shadow.
+
+**How to use**
+
+1. Select a character in the Hierarchy (or materials in the Project window).
+2. Open **Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)**. The window follows the Inspector language (Japanese / English).
+3. Check the materials and body parts in the list. The body part is guessed from the material name; change it if it is wrong.
+4. Press **Migrate**. The results are printed to the Console.
+
+**Supported shaders**
+
+| Source shader | What is copied |
+|---|---|
+| MToon (VRM 0.x / VRM 1.0) | Color, texture, shade color, shading border and blur, normal map, emission, matcap, rim, outline (width, color, mask), render mode, double-sided |
+| lilToon | Color, texture, shadows 1–3 (color, border, blur, mask), rim, matcap, emission, outline, render mode, cull |
+| UTS (Unity-Chan Toon Shader) | Color, texture, 1st / 2nd shade (color, step, feather), normal map, rim, matcap, emission, outline, render mode |
+| URP Lit / Simple Lit / Unlit, Standard | Color, texture, normal map, AO, metallic, smoothness, emission, render mode, cull |
+| Others | Color, texture, normal map, and emission only |
+
+**How it works**
+
+- A body-part preset (skin, face, hair, clothes, metal, face parts) is applied first, then the original values are copied on top, so the original shade colors and outlines win.
+- MToon and UTS store the shadow color itself, so it is divided by the base color to get GalaxyToon's "color multiplied onto the base".
+- Tiny placeholder textures (the 8×8 matcap and flat normal map that VRoid assigns) and normal maps with a strength of 0 are not copied, so unused features add no cost.
+- Part guessing also understands VRoid names (`Face_00_SKIN`, `HairBack_00_HAIR`, `EyeWhite_00_EYE`, `Tops_01_CLOTH`, etc.).
+
+**Settings**
+
+| Setting | Description |
+|---|---|
+| Overwrite Original Materials | OFF (recommended): creates copies and assigns them to the renderers; the originals are kept<br>ON: changes the shader of the originals. Read-only materials (imported from VRM, etc.) are copied instead |
+| Output Folder | Where copies are saved. Existing materials with the same name are updated in place (GUIDs are kept, so references don't break) |
+| Add Galaxy Toon Face | Adds `GalaxyToonFace` to the character root |
+| Find Eyes and Cheeks | Same as [Find Iris Area](#find-iris-area) and [Find Cheek Positions](#find-cheek-positions) |
+| Bake Smooth Outline Normals | Same as [Bake Smooth Outline Normals](#bake-smooth-outline-normals). Baked meshes go into `OutlineNormals/` inside the output folder |
+| Set Up Hair Shadow | Applies "Cast Hair Shadow" to hair and "Receive Hair Shadow" to the face and irises, and runs [Enable Hair Shadow](#enable-hair-shadow) |
+
+- Everything can be undone with Undo (Ctrl+Z).
+- Anything that cannot be copied (an MToon shade texture that differs from the main texture, screen-space outline width, etc.) is noted in the Console.
+- GalaxyToon materials cannot be exported in a VRM file (the VRM spec only allows MToon and a few others). Migration is for characters used inside Unity.
 
 ## Find Iris Area
 

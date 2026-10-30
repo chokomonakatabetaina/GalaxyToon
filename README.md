@@ -102,6 +102,7 @@ Author: @matechagame
 
 | メニュー | 内容 |
 |---|---|
+| GalaxyToon に移行 (MToon・lilToon・Lit など) | ほかのシェーダーのマテリアルを GalaxyToon に移す。VRM(VRoid)のキャラは顔・瞳・輪郭線・髪の影までまとめて設定 |
 | サンプルシーンを作る (機能ごとの球) | `Samples/` のサンプルシーンを作り直す |
 | 髪の影を有効にする | 使っている URP Renderer に Galaxy Hair Shadow Feature を足す |
 | 瞳の範囲を探す / 頬の位置を探す | 選択中のキャラから瞳・頬の UV を探してマテリアルに入れる |

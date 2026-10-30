@@ -104,6 +104,7 @@ Found under `Tools > GalaxyToon`.
 
 | Menu | Description |
 |---|---|
+| GalaxyToon に移行 (Migrate to GalaxyToon) | Converts materials from other shaders (MToon, lilToon, UTS, Lit, etc.) to GalaxyToon. For VRM (VRoid) characters, also sets up the face, eyes, outline, and hair shadow |
 | サンプルシーンを作る (Create Sample Scene) | Rebuilds the sample scene in `Samples/` |
 | 髪の影を有効にする (Enable Hair Shadow) | Adds Galaxy Hair Shadow Feature to the URP Renderers in use |
 | 瞳の範囲を探す / 頬の位置を探す (Find Iris Area / Find Cheek Positions) | Finds the iris / cheek UVs of the selected character and sets them on the material |

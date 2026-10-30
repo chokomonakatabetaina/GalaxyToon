@@ -20,13 +20,14 @@ namespace GalaxyToon.Editor
             Debug.Log($"[輪郭線] {n} 個のメッシュに なめらか法線を焼きました。");
         }
 
-        /// <summary>go(プレハブアセットでも可)の中の、GalaxyShader/Toon を使う Renderer のメッシュを焼いて差し替える。焼いた数を返す。</summary>
-        public static int Bake(GameObject go)
+        /// <summary>go(プレハブアセットでも可)の中の、GalaxyShader/Toon を使う Renderer のメッシュを焼いて差し替える。焼いた数を返す。
+        /// folder を省くと、プレハブの隣(シーンの物なら Assets)の OutlineNormals/ に保存する。</summary>
+        public static int Bake(GameObject go, string folder = null)
         {
             string assetPath = AssetDatabase.GetAssetPath(go);
             bool isPrefabAsset = !string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".prefab");
             GameObject root = isPrefabAsset ? PrefabUtility.LoadPrefabContents(assetPath) : go;
-            string folder = Path.Combine(Path.GetDirectoryName(string.IsNullOrEmpty(assetPath) ? "Assets/x" : assetPath), "OutlineNormals").Replace('\\', '/');
+            if (string.IsNullOrEmpty(folder)) folder = Path.Combine(Path.GetDirectoryName(string.IsNullOrEmpty(assetPath) ? "Assets/x" : assetPath), "OutlineNormals").Replace('\\', '/');
             int count = 0;
             try
             {
@@ -43,6 +44,7 @@ namespace GalaxyToon.Editor
                     var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
                     if (existing != null) { EditorUtility.CopySerialized(baked, existing); Object.DestroyImmediate(baked); baked = existing; }
                     else AssetDatabase.CreateAsset(baked, path);
+                    if (!isPrefabAsset) Undo.RecordObject(r is SkinnedMeshRenderer ? (Object)r : r.GetComponent<MeshFilter>(), "なめらか法線を焼く");
                     if (r is SkinnedMeshRenderer s2) s2.sharedMesh = baked; else r.GetComponent<MeshFilter>().sharedMesh = baked;
                     count++;
                 }
