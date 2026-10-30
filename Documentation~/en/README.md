@@ -27,4 +27,4 @@ Setting names are written as they appear when the Inspector language is set to *
 
 ## Editor Tools
 
-- [Editor Tools](editor-tools.md) — every tool in the `Tools > GalaxyToon` menu
+- [Editor Tools](editor-tools.md) — every tool in the `Tools > GalaxyToon` menu (migrating from other shaders, finding eyes and cheeks, SDF shadow maps, and more)

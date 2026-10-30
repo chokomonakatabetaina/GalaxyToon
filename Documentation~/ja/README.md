@@ -25,4 +25,4 @@ GalaxyToon の機能を、画面ごと・機能ごとに説明します。導入
 
 ## エディタツール
 
-- [エディタツール](editor-tools.md) — `Tools > GalaxyToon` メニューの全ツール
+- [エディタツール](editor-tools.md) — `Tools > GalaxyToon` メニューの全ツール(ほかのシェーダーからの移行、瞳・頬の自動検出、SDF 影マップなど)

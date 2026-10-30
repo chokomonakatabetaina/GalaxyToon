@@ -70,6 +70,17 @@ Author: @matechagame
 - Inspector 左上で日本語 / English を切り替えられます。
 - `Ctrl+Shift+T` で、全マテリアルを URP Lit に一時的に切り替えて見比べられます(マテリアルは変わりません)。
 
+### ほかのシェーダーから移る(MToon・lilToon など)
+
+VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` を開いて **移行する** を押すと、まとめて GalaxyToon に切り替わります。
+
+- 対応: MToon(VRM 0.x / 1.0)・lilToon・UTS・URP Lit / Unlit・Standard
+- 部位(肌・顔・髪・服・顔パーツなど)をマテリアル名から推測してプリセットを当て、元の色・影色・輪郭線を写します。
+- Galaxy Toon Face・瞳と頬の位置・輪郭線のなめらか法線・髪の影まで、まとめて設定できます。
+- 元のマテリアルは書き換えず、複製を作って差し替えます。Undo で戻せます。
+
+詳しくは [説明書のエディタツール](Documentation~/ja/editor-tools.md#galaxytoon-に移行) を見てください。
+
 ### 髪の影
 
 前髪の影を顔に落とすには、`Tools > GalaxyToon > 髪の影を有効にする` で使っている URP Renderer に **Galaxy Hair Shadow Feature** を追加し(Renderer の Add Renderer Feature から手で足しても同じです)、キャラのルートに **Galaxy Toon Face** を付けます。髪のマテリアルはプリセット「髪の影を落とす」、顔・瞳は「髪の影を受ける」にします。

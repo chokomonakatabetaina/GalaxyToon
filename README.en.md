@@ -72,6 +72,17 @@ The assemblies reference only URP.
 
 Menu items and the tool windows are shown in Japanese. In this document they are written as the Japanese name followed by an English translation.
 
+### Migrating from Other Shaders (MToon, lilToon, etc.)
+
+For VRM (VRoid) and other characters, select the character in the Hierarchy, open `Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` (Migrate to GalaxyToon), and press **Migrate** to switch everything to GalaxyToon at once. This window follows the Inspector language (Japanese / English).
+
+- Supported: MToon (VRM 0.x / 1.0), lilToon, UTS, URP Lit / Unlit, Standard
+- The body part (skin, face, hair, clothes, face parts, etc.) is guessed from the material name, a preset is applied, and the original colors, shade colors, and outlines are copied.
+- It can also add Galaxy Toon Face, find the eyes and cheeks, bake smooth outline normals, and set up hair shadows.
+- The original materials are not changed; copies are created and assigned. Everything can be undone.
+
+See [Editor Tools in the documentation](Documentation~/en/editor-tools.md#migrate-to-galaxytoon) for details.
+
 ### Hair Shadow
 
 To cast bangs shadows on the face, run `Tools > GalaxyToon > 髪の影を有効にする` (Enable Hair Shadow) to add **Galaxy Hair Shadow Feature** to the URP Renderer you use (adding it manually with Add Renderer Feature works the same), and add **Galaxy Toon Face** to the character root. Use the preset **Cast Hair Shadow** on hair materials and **Receive Hair Shadow** on face / eye materials.
