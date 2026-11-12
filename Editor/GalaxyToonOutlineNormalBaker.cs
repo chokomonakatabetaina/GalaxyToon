@@ -46,6 +46,14 @@ namespace GalaxyToon.Editor
                     else AssetDatabase.CreateAsset(baked, path);
                     if (!isPrefabAsset) Undo.RecordObject(r is SkinnedMeshRenderer ? (Object)r : r.GetComponent<MeshFilter>(), "なめらか法線を焼く");
                     if (r is SkinnedMeshRenderer s2) s2.sharedMesh = baked; else r.GetComponent<MeshFilter>().sharedMesh = baked;
+                    // 焼いたメッシュのマテリアルだけ、なめらか法線を使う(焼いていないメッシュで使うと、無い UV を読んで線が途切れる)
+                    foreach (Material m in r.sharedMaterials)
+                        if (m != null && m.shader != null && m.shader.name == "GalaxyShader/Toon" && m.GetFloat("_OutlineSmoothNormal") < 0.5f)
+                        {
+                            if (EditorUtility.IsPersistent(m)) Undo.RecordObject(m, "なめらか法線を焼く");
+                            m.SetFloat("_OutlineSmoothNormal", 1f);
+                            EditorUtility.SetDirty(m);
+                        }
                     count++;
                 }
                 if (isPrefabAsset) PrefabUtility.SaveAsPrefabAsset(root, assetPath);

@@ -37,7 +37,7 @@ Outlines can break at model corners (UV seams or hard edges). Fix them as follow
 
 1. Select a prefab or the character in the scene.
 2. Run **Tools > GalaxyToon > 輪郭線用のなめらか法線を焼く** (Bake Smooth Outline Normals).
-3. Check that **Use Smoothed Normals for Outline** is ON (it is ON by default).
+3. Baking turns **Use Smoothed Normals for Outline** ON for the materials of the baked character (it is OFF by default; turning it on for meshes that were not baked breaks the outline).
 
 The baked meshes are saved in an `OutlineNormals/` folder and swapped into the renderers. The original FBX is not changed.
 

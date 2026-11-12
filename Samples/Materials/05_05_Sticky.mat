@@ -373,7 +373,7 @@ Material:
     - _DepthRim: 0
     - _DirtAmount: 0
     - _DirtReceive: 1
-    - _DirtScale: 12
+    - _DirtScale: 39.1
     - _DissolveAmount: 0
     - _DissolveEdgeWidth: 0.05
     - _DissolveInvert: 0
@@ -462,12 +462,12 @@ Material:
     - _LightNormalize: 0
     - _LightSoftLimit: 0
     - _LightSource: 0
-    - _LiquidAmount: 0.5
-    - _LiquidFlow: 0.05
-    - _LiquidGloss: 1.6
+    - _LiquidAmount: 0.569
+    - _LiquidFlow: 1.23
+    - _LiquidGloss: 0
     - _LiquidReceive: 1
-    - _LiquidScale: 25
-    - _LiquidViscosity: 0.9
+    - _LiquidScale: 30.7
+    - _LiquidViscosity: 0.723
     - _MangaAngle: 45
     - _MangaSpacing: 6
     - _MangaStyle: 0
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -510,7 +510,7 @@ Material:
     - _PerspectiveRemoval: 0
     - _QueueOffset: 0
     - _RainAmount: 0
-    - _RainFlowAmount: 1
+    - _RainFlowAmount: 0.238
     - _RainReceive: 1
     - _RainRipples: 1
     - _RainScale: 8
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -638,7 +639,7 @@ Material:
     - _BangRange: {r: 0, g: 0, b: 0, a: 0}
     - _BangRegion: {r: 0, g: 0, b: 0, a: 0}
     - _BangUp: {r: 0, g: 1, b: 0, a: 0}
-    - _BaseColor: {r: 0.18, g: 0.32, b: 0.68, a: 1}
+    - _BaseColor: {r: 0.783, g: 0.616, b: 0.5356, a: 1}
     - _BlushColor: {r: 1, g: 0.41999996, b: 0.47999996, a: 0.6}
     - _BlushUV: {r: 0, g: 0, b: 0, a: 0}
     - _DirtColor: {r: 0.11999995, g: 0.09999997, b: 0.089999996, a: 0.85}
@@ -680,11 +681,11 @@ Material:
     - _Layer2Scroll: {r: 0, g: 0, b: 0, a: 0}
     - _Layer3Color: {r: 1, g: 1, b: 1, a: 1}
     - _Layer3Scroll: {r: 0, g: 0, b: 0, a: 0}
-    - _LiquidColor: {r: 0.95, g: 0.88, b: 0.7, a: 0.55}
+    - _LiquidColor: {r: 0.95, g: 0.88, b: 0.7, a: 0.8667}
     - _LiquidFlowDir: {r: 0, g: -1, b: 0, a: 0}
     - _MatCap2Color: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
-    - _NetDentColor: {r: 0.72, g: 0.5, b: 0.5, a: 1}
+    - _NetDentColor: {r: 1, g: 0.9104, b: 0.9104, a: 1}
     - _NoseLineColor: {r: 0.54999995, g: 0.34999996, b: 0.34999996, a: 0}
     - _OutlineColor: {r: 0.24999997, g: 0.19999996, b: 0.24999997, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 0}

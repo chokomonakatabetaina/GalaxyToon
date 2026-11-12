@@ -330,15 +330,15 @@ Material:
     - _AnimeShadowValue: 0.72
     - _Aniso2Sharpness: 90
     - _Aniso2Shift: 0.18
-    - _AnisoBlur: 0.1
-    - _AnisoBorder: 0.5
+    - _AnisoBlur: 0.489
+    - _AnisoBorder: 0.395
     - _AnisoCenterShape: 0
     - _AnisoDirection: 1
-    - _AnisoJitterScale: 35
+    - _AnisoJitterScale: 38
     - _AnisoJitterStrength: 0.15
-    - _AnisoShadowMask: 0.5
-    - _AnisoSharpness: 40
-    - _AnisoShift: 0
+    - _AnisoShadowMask: 0
+    - _AnisoSharpness: 34.1
+    - _AnisoShift: 0.152
     - _AnisoUseRamp: 0
     - _AudioBand: 0
     - _AudioEmission: 0
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -684,7 +685,7 @@ Material:
     - _LiquidFlowDir: {r: 0, g: -1, b: 0, a: 0}
     - _MatCap2Color: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
-    - _NetDentColor: {r: 0.72, g: 0.5, b: 0.5, a: 1}
+    - _NetDentColor: {r: 0.7547, g: 0.5091, b: 0.5091, a: 1}
     - _NoseLineColor: {r: 0.54999995, g: 0.34999996, b: 0.34999996, a: 0}
     - _OutlineColor: {r: 0.24999997, g: 0.19999996, b: 0.24999997, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 0}

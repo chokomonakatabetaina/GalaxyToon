@@ -107,7 +107,7 @@ Place **Galaxy Toon Light** and light traveling along that object's forward dire
 
 ### Toon Plus (all off by default)
 
-The "Toon Plus" section of the Inspector groups these; only the ones you turn on take effect: light color normalize and soft upper limit, shadow side tinted by the sky, receive-shadow offset, additional light tuning, rim shade and soft depth rim, MatCap perspective/roll correction with a mask, depth-only Z offset and perspective removal, global dither alpha, day/night ramp, hair highlight shape and specular anti-flicker, emission hue cycling and view color, iridescence, vertex color meanings (R shadow, G border, B outline depth, A outline width), outline wider on the lit side and fading with distance, contact shadows, starry layer, nose line in profile (paint its mask to match the face texture), shadow-only normals from UV7, and a packed mask with per-material-ID colors.
+The "Toon Plus" section of the Inspector groups these; only the ones you turn on take effect: light color normalize and soft upper limit, shadow side tinted by the sky, receive-shadow offset, additional light tuning, rim shade and soft depth rim, MatCap perspective/roll correction with a mask, depth-only Z offset and perspective removal, global dither alpha, day/night ramp, hair highlight shape and specular anti-flicker, emission hue cycling and view color, iridescence, vertex color meanings (R shadow, G border, B outline depth, A outline width), outline wider on the lit side and fading with distance, contact shadows, starry layer, nose line in profile (paint its mask to match the face texture), shadow-only normals from UV7 (turn on "Use Shadow-Only Normals"), and a packed mask with per-material-ID colors.
 
 ### Soft Touch
 

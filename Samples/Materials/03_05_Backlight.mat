@@ -345,9 +345,9 @@ Material:
     - _AudioOutline: 0
     - _AudioRim: 0
     - _BackLightAlbedoMix: 0
-    - _BackLightEdge: 0.35
-    - _BackLightFocus: 5
-    - _BackLightSoft: 0.05
+    - _BackLightEdge: 0.15
+    - _BackLightFocus: 2
+    - _BackLightSoft: 0.15
     - _BackLightViewMix: 1
     - _BakedSteps: 0
     - _BangFadeMode: 0
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -632,13 +633,13 @@ Material:
     - _AnimeEdgeColor: {r: 1, g: 0.5, b: 0.41999996, a: 0.5}
     - _Aniso2Color: {r: 1, g: 1, b: 1, a: 0}
     - _AnisoColor: {r: 1, g: 1, b: 1, a: 0}
-    - _BackLightTint: {r: 1, g: 0.6, b: 0.4, a: 1}
+    - _BackLightTint: {r: 2.5, g: 1.2, b: 0.5, a: 1}
     - _BangCenter: {r: 0, g: 0, b: 0, a: 0}
     - _BangForward: {r: 0, g: 0, b: 1, a: 0}
     - _BangRange: {r: 0, g: 0, b: 0, a: 0}
     - _BangRegion: {r: 0, g: 0, b: 0, a: 0}
     - _BangUp: {r: 0, g: 1, b: 0, a: 0}
-    - _BaseColor: {r: 0.85, g: 0.75, b: 1, a: 1}
+    - _BaseColor: {r: 0.3, g: 0.3, b: 0.45, a: 1}
     - _BlushColor: {r: 1, g: 0.41999996, b: 0.47999996, a: 0.6}
     - _BlushUV: {r: 0, g: 0, b: 0, a: 0}
     - _DirtColor: {r: 0.11999995, g: 0.09999997, b: 0.089999996, a: 0.85}

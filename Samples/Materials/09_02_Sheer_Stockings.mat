@@ -480,17 +480,17 @@ Material:
     - _Metallic: 0
     - _NearFadeEnd: 0.3
     - _NearFadeStart: 0.1
-    - _NetDentHighlight: 0.12
+    - _NetDentHighlight: 0.354
     - _NetDentShadow: 0.35
-    - _NetDentStrength: 0.6
-    - _NetDentWidth: 2
+    - _NetDentStrength: 0.659
+    - _NetDentWidth: 2.18
     - _NetSource: 0
     - _NetThreshold: 0.35
     - _NoseLineSide: 0.2
     - _ObjectId: 0
     - _OcclusionStrength: 1
     - _OutlineBoil: 0
-    - _OutlineBoilFps: 8
+    - _OutlineBoilFps: 10.91
     - _OutlineCenterBoost: 0
     - _OutlineCenterRadius: 0.8
     - _OutlineColorTrace: 0
@@ -500,12 +500,12 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
-    - _OutlineTexBlend: 0.5
+    - _OutlineSmoothNormal: 0
+    - _OutlineTexBlend: 0.479
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
     - _OutlineVertexDepth: 0
-    - _OutlineWidth: 0.08
+    - _OutlineWidth: 0.241
     - _OutlineZOffset: 0
     - _PerspectiveRemoval: 0
     - _QueueOffset: 0
@@ -555,15 +555,16 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
     - _ShadowRampRow: 0
     - _ShadowRampRows: 1
     - _ShadowTerminatorFade: 1
-    - _SheerAmount: 0.75
-    - _SheerPower: 2.2
-    - _SheerSheen: 0.25
+    - _SheerAmount: 0.865
+    - _SheerPower: 1.5
+    - _SheerSheen: 0.506
     - _SkirtShadowReceive: 0
     - _Smoothness: 0
     - _SoftBulge: 0.25
@@ -695,7 +696,7 @@ Material:
     - _Shade2Tint: {r: 0.68, g: 0.6, b: 0.74, a: 0}
     - _Shade3Tint: {r: 0.5, g: 0.45, b: 0.6, a: 0}
     - _ShadowPatternColor: {r: 0.54999995, g: 0.45, b: 0.6, a: 1}
-    - _SheerSkinColor: {r: 1, g: 0.86, b: 0.82, a: 1}
+    - _SheerSkinColor: {r: 1, g: 0.8856, b: 0.8538, a: 1}
     - _SoftBlush: {r: 1, g: 0.62, b: 0.6, a: 0.5}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _SssColor: {r: 1, g: 0.31999996, b: 0.24999997, a: 0.65}

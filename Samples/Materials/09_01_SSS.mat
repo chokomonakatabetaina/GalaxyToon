@@ -501,7 +501,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.7
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -556,13 +556,14 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
     - _ShadowRampRow: 0
     - _ShadowRampRows: 1
     - _ShadowTerminatorFade: 1
-    - _SheerAmount: 0.65
+    - _SheerAmount: 0.806
     - _SheerPower: 2.2
     - _SheerSheen: 0.25
     - _SkirtShadowReceive: 0
@@ -583,7 +584,7 @@ Material:
     - _SssEdgeWidth: 0.12
     - _SssFrontScatter: 0.6
     - _SssPower: 3.5
-    - _SssShadowBleed: 0.15
+    - _SssShadowBleed: 0.536
     - _SssTranslucency: 0.8
     - _StarryParallax: 0.3
     - _StarryScale: 40
@@ -699,7 +700,7 @@ Material:
     - _SheerSkinColor: {r: 1, g: 0.86, b: 0.82, a: 1}
     - _SoftBlush: {r: 1, g: 0.62, b: 0.6, a: 0.5}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
-    - _SssColor: {r: 1, g: 0.3, b: 0.25, a: 1}
+    - _SssColor: {r: 1, g: 0.6773, b: 0.6557, a: 1}
     - _StarryColor: {r: 1, g: 0.95, b: 0.85, a: 1}
     - _StarryNebula: {r: 0.34999996, g: 0.19999996, b: 0.8, a: 0.6}
     - _TipColor: {r: 1, g: 1, b: 1, a: 0}

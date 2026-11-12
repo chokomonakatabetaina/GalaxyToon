@@ -405,11 +405,11 @@ Material:
     - _FaceShading: 0
     - _FaceSphere: 0
     - _FoamAmount: 0
-    - _FoamFlow: 0.15
-    - _FoamMerge: 0.6
-    - _FoamPop: 0.12
+    - _FoamFlow: 0.28
+    - _FoamMerge: 0.508
+    - _FoamPop: 0.212
     - _FoamReceive: 1
-    - _FoamScale: 18
+    - _FoamScale: 64
     - _FoamSize: 0.5
     - _FxBump: 0.3
     - _Gamma: 1
@@ -463,11 +463,11 @@ Material:
     - _LightSoftLimit: 0
     - _LightSource: 0
     - _LiquidAmount: 0
-    - _LiquidFlow: 0.1
-    - _LiquidGloss: 1
+    - _LiquidFlow: 0.15
+    - _LiquidGloss: 0.77
     - _LiquidReceive: 1
     - _LiquidScale: 25
-    - _LiquidViscosity: 0
+    - _LiquidViscosity: 0.069
     - _MangaAngle: 45
     - _MangaSpacing: 6
     - _MangaStyle: 0
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -509,7 +509,7 @@ Material:
     - _OutlineZOffset: 0
     - _PerspectiveRemoval: 0
     - _QueueOffset: 0
-    - _RainAmount: 0
+    - _RainAmount: 0.323
     - _RainFlowAmount: 1
     - _RainReceive: 1
     - _RainRipples: 1
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -595,10 +596,10 @@ Material:
     - _StencilWriteMask: 255
     - _StencilZFail: 0
     - _SweatAmount: 0.7
-    - _SweatFlow: 0.3
+    - _SweatFlow: 0.369
     - _SweatReceive: 1
     - _SweatScale: 35
-    - _SweatSize: 0.3
+    - _SweatSize: 0.258
     - _TexLineKeep: 0
     - _TipAxis: 0
     - _TipEnd: 0
@@ -619,9 +620,9 @@ Material:
     - _VertexColorBias: 0
     - _VertexColorShadow: 0
     - _VolumeReceive: 1
-    - _WetAmount: 0
+    - _WetAmount: 0.385
     - _WetDarken: 0.3
-    - _WetGloss: 0.6
+    - _WetGloss: 1.06
     - _WetReceive: 1
     - _WetShrink: 0
     - _WetSoak: 0

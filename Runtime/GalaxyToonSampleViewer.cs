@@ -60,6 +60,7 @@ namespace GalaxyToon
         [Tooltip("素材を着せ替えるプレビューのモデル。空ならボタンを出さない。")] public Renderer preview;
         [Tooltip("着せ替える素材と、その名前。")] public Material[] previewMaterials;
         public string[] previewNames;
+        [Tooltip("素材ごとに、その素材のときだけ出す物(白い液など。previewMaterials と同じ並び。無ければ空)。")] public GameObject[] previewExtras;
         private int previewIndex;
         private bool dragging; // プレビューのモデルをマウスで回している
         private int lastPicked = -1;   // 最後にクリックした見本(ダブルクリックで、その素材をモデルに着せる)
@@ -352,6 +353,7 @@ namespace GalaxyToon
             if (at >= 0) { SetPreviewMaterial(at); return; }
             preview.sharedMaterial = source.sharedMaterial;
             wornName = entries[i].title.Replace("\n", " ");
+            ShowExtras(-1);
             if (fingerStrings != null) fingerStrings.SetActive(false);
             int model = PreviewEntry();
             if (model >= 0) Show(model);
@@ -364,9 +366,18 @@ namespace GalaxyToon
             previewIndex = (i % previewMaterials.Length + previewMaterials.Length) % previewMaterials.Length;
             preview.sharedMaterial = previewMaterials[previewIndex];
             wornName = null;
+            ShowExtras(previewIndex);
             if (fingerStrings != null && !StringsMode) fingerStrings.SetActive(false); // 糸は糸の素材のときだけ
             int at = PreviewEntry();
             if (at >= 0 && index != at) Show(at);
+        }
+
+        /// <summary>i 番目の素材の部品だけを出す(-1 ですべて隠す)。</summary>
+        private void ShowExtras(int i)
+        {
+            if (previewExtras == null) return;
+            for (int j = 0; j < previewExtras.Length; j++)
+                if (previewExtras[j] != null) previewExtras[j].SetActive(j == i);
         }
 
         /// <summary>プリセット i を Volume に入れる。-1 でオフ。</summary>

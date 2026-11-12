@@ -392,7 +392,7 @@ Material:
     - _Emission2Animate: 0
     - _Emission2Blink: 0
     - _EmissionAnimate: 0
-    - _EmissionFlicker: 0
+    - _EmissionFlicker: 3.23
     - _EmissionHueSpeed: 0
     - _EyeCausticSize: 0.55
     - _EyeHighlightSize: 0.2
@@ -503,7 +503,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -558,6 +558,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -649,7 +650,7 @@ Material:
     - _DissolveEdgeColor: {r: 2, g: 1, b: 0.3, a: 1}
     - _Emission2Color: {r: 0, g: 0, b: 0, a: 1}
     - _Emission2Scroll: {r: 0, g: 0, b: 0, a: 0}
-    - _EmissionColor: {r: 1.5, g: 1.5, b: 1.4, a: 1}
+    - _EmissionColor: {r: 1.5209, g: 1.9688, b: 2.0026, a: 1}
     - _EmissionScroll: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionViewColor: {r: 0.39999998, g: 0.8, b: 1, a: 0}
     - _EyeCausticColor: {r: 1, g: 0.95, b: 0.85, a: 0.35}

@@ -323,7 +323,7 @@ Material:
     - _AnimeHardness: 0.85
     - _AnimeMode: 0
     - _AnimeNoGloss: 0.85
-    - _AnimeOutlinePixel: 0
+    - _AnimeOutlinePixel: 0.143
     - _AnimeShadowHue: -0.03
     - _AnimeShadowSat: 0.35
     - _AnimeShadowValue: 0.72
@@ -488,24 +488,24 @@ Material:
     - _NoseLineSide: 0.2
     - _ObjectId: 0
     - _OcclusionStrength: 1
-    - _OutlineBoil: 0
-    - _OutlineBoilFps: 8
-    - _OutlineCenterBoost: 0
-    - _OutlineCenterRadius: 0.8
-    - _OutlineColorTrace: 0
+    - _OutlineBoil: 0.829
+    - _OutlineBoilFps: 15.07
+    - _OutlineCenterBoost: 0.764
+    - _OutlineCenterRadius: 0.413
+    - _OutlineColorTrace: 0.016
     - _OutlineFadeEnd: 0
     - _OutlineFadeStart: 20
-    - _OutlineFovKeep: 1
+    - _OutlineFovKeep: 0.997
     - _OutlineLightWidth: 0
-    - _OutlineLit: 1
-    - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
-    - _OutlineTexBlend: 0.5
+    - _OutlineLit: 0.941
+    - _OutlineNearClamp: 0.776
+    - _OutlineSmoothNormal: 0
+    - _OutlineTexBlend: 0.646
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
     - _OutlineVertexDepth: 0
-    - _OutlineWidth: 0.08
-    - _OutlineZOffset: 0
+    - _OutlineWidth: 0.472
+    - _OutlineZOffset: 0.05
     - _PerspectiveRemoval: 0
     - _QueueOffset: 0
     - _RainAmount: 0
@@ -554,6 +554,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
@@ -637,7 +638,7 @@ Material:
     - _BangRange: {r: 0, g: 0, b: 0, a: 0}
     - _BangRegion: {r: 0, g: 0, b: 0, a: 0}
     - _BangUp: {r: 0, g: 1, b: 0, a: 0}
-    - _BaseColor: {r: 0.18, g: 0.32, b: 0.68, a: 1}
+    - _BaseColor: {r: 0.8490566, g: 0.6570832, b: 0.54067284, a: 1}
     - _BlushColor: {r: 1, g: 0.41999996, b: 0.47999996, a: 0.6}
     - _BlushUV: {r: 0, g: 0, b: 0, a: 0}
     - _DirtColor: {r: 0.11999995, g: 0.09999997, b: 0.089999996, a: 0.85}

@@ -330,13 +330,13 @@ Material:
     - _AnimeShadowValue: 0.72
     - _Aniso2Sharpness: 90
     - _Aniso2Shift: 0.18
-    - _AnisoBlur: 0.1
+    - _AnisoBlur: 0.935
     - _AnisoBorder: 0.5
     - _AnisoCenterShape: 0
     - _AnisoDirection: 1
     - _AnisoJitterScale: 35
-    - _AnisoJitterStrength: 0
-    - _AnisoShadowMask: 0.5
+    - _AnisoJitterStrength: 0.234
+    - _AnisoShadowMask: 0.489
     - _AnisoSharpness: 40
     - _AnisoShift: 0
     - _AnisoUseRamp: 0
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35

@@ -501,7 +501,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -531,12 +531,12 @@ Material:
     - _RimDepthSoft: 0
     - _RimDepthThreshold: 0.1
     - _RimDepthWidth: 1
-    - _RimEdge: 0.5
+    - _RimEdge: 0.346
     - _RimFalloff: 3.5
     - _RimLightAlign: 0
     - _RimShadeFade: 0.5
     - _RimShadePower: 3
-    - _RimSoft: 0.65
+    - _RimSoft: 0.45
     - _RingMode: 0
     - _RingOffset: 0
     - _RingViewShift: 0.3
@@ -556,6 +556,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35

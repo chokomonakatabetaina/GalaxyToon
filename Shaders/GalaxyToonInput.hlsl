@@ -257,6 +257,7 @@ CBUFFER_START(UnityPerMaterial)
     half4 _EmissionViewColor;
     half _VertexColorShadow;
     half _VertexColorBias;
+    half _ShadowNormalOn;
     half _SkirtShadowReceive;
     half _MangaStyle;
     half _MangaSpacing;

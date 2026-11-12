@@ -324,7 +324,7 @@ Material:
     - _AnimeHardness: 0.85
     - _AnimeMode: 0
     - _AnimeNoGloss: 0.85
-    - _AnimeOutlinePixel: 0
+    - _AnimeOutlinePixel: 0.562
     - _AnimeShadowHue: -0.03
     - _AnimeShadowSat: 0.35
     - _AnimeShadowValue: 0.72
@@ -463,8 +463,8 @@ Material:
     - _LightSoftLimit: 0
     - _LightSource: 0
     - _LiquidAmount: 1
-    - _LiquidFlow: 0.3
-    - _LiquidGloss: 1.2
+    - _LiquidFlow: 0.42
+    - _LiquidGloss: 1.49
     - _LiquidReceive: 1
     - _LiquidScale: 12
     - _LiquidViscosity: 0
@@ -493,19 +493,19 @@ Material:
     - _OutlineBoilFps: 8
     - _OutlineCenterBoost: 0
     - _OutlineCenterRadius: 0.8
-    - _OutlineColorTrace: 0
+    - _OutlineColorTrace: 0.438
     - _OutlineFadeEnd: 0
     - _OutlineFadeStart: 20
     - _OutlineFovKeep: 1
     - _OutlineLightWidth: 0
-    - _OutlineLit: 1
+    - _OutlineLit: 0.385
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
     - _OutlineVertexDepth: 0
-    - _OutlineWidth: 0.08
+    - _OutlineWidth: 0.849
     - _OutlineZOffset: 0
     - _PerspectiveRemoval: 0
     - _QueueOffset: 0
@@ -555,13 +555,14 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35
     - _ShadowRampRow: 0
     - _ShadowRampRows: 1
     - _ShadowTerminatorFade: 1
-    - _SheerAmount: 0.65
+    - _SheerAmount: 0.696
     - _SheerPower: 2.2
     - _SheerSheen: 0.25
     - _SkirtShadowReceive: 0
@@ -619,9 +620,9 @@ Material:
     - _VertexColorBias: 0
     - _VertexColorShadow: 0
     - _VolumeReceive: 1
-    - _WetAmount: 0
+    - _WetAmount: 0.462
     - _WetDarken: 0.3
-    - _WetGloss: 0.6
+    - _WetGloss: 1.54
     - _WetReceive: 1
     - _WetShrink: 0
     - _WetSoak: 0
@@ -638,7 +639,7 @@ Material:
     - _BangRange: {r: 0, g: 0, b: 0, a: 0}
     - _BangRegion: {r: 0, g: 0, b: 0, a: 0}
     - _BangUp: {r: 0, g: 1, b: 0, a: 0}
-    - _BaseColor: {r: 0.18, g: 0.32, b: 0.68, a: 1}
+    - _BaseColor: {r: 0.9528, g: 0.7114, b: 0.445, a: 1}
     - _BlushColor: {r: 1, g: 0.41999996, b: 0.47999996, a: 0.6}
     - _BlushUV: {r: 0, g: 0, b: 0, a: 0}
     - _DirtColor: {r: 0.11999995, g: 0.09999997, b: 0.089999996, a: 0.85}
@@ -680,13 +681,13 @@ Material:
     - _Layer2Scroll: {r: 0, g: 0, b: 0, a: 0}
     - _Layer3Color: {r: 1, g: 1, b: 1, a: 1}
     - _Layer3Scroll: {r: 0, g: 0, b: 0, a: 0}
-    - _LiquidColor: {r: 1, g: 1, b: 1, a: 0.75}
+    - _LiquidColor: {r: 1, g: 1, b: 1, a: 0.902}
     - _LiquidFlowDir: {r: 0, g: -1, b: 0, a: 0}
     - _MatCap2Color: {r: 1, g: 1, b: 1, a: 1}
     - _MatCapColor: {r: 1, g: 1, b: 1, a: 1}
     - _NetDentColor: {r: 0.72, g: 0.5, b: 0.5, a: 1}
     - _NoseLineColor: {r: 0.54999995, g: 0.34999996, b: 0.34999996, a: 0}
-    - _OutlineColor: {r: 0.24999997, g: 0.19999996, b: 0.24999997, a: 1}
+    - _OutlineColor: {r: 0.2075, g: 0.0597, b: 0.0748, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 0}
     - _RimDarkTint: {r: 0.54999995, g: 0.45, b: 0.54999995, a: 0}
     - _RimOppositeColor: {r: 0.45, g: 0.65, b: 1, a: 0}
@@ -698,7 +699,7 @@ Material:
     - _SheerSkinColor: {r: 1, g: 0.86, b: 0.82, a: 1}
     - _SoftBlush: {r: 1, g: 0.62, b: 0.6, a: 0.5}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
-    - _SssColor: {r: 1, g: 0.31999996, b: 0.24999997, a: 0.65}
+    - _SssColor: {r: 1, g: 0.6283, b: 0.5896, a: 0.65}
     - _StarryColor: {r: 1, g: 0.95, b: 0.85, a: 1}
     - _StarryNebula: {r: 0.34999996, g: 0.19999996, b: 0.8, a: 0.6}
     - _TipColor: {r: 1, g: 1, b: 1, a: 0}

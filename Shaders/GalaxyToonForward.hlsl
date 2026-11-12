@@ -33,7 +33,7 @@ struct Attributes
     float4 tangentOS : TANGENT;
     float2 uv : TEXCOORD0;
     float2 lightmapUV : TEXCOORD1;
-    float3 shadowNormalTS : TEXCOORD6; // 影だけに使う法線(接空間。ツールが UV7 に入れる。無ければ 0)
+    float3 shadowNormalTS : TEXCOORD6; // 影だけに使う法線(接空間。UV7。_ShadowNormalOn のときだけ使う)
     half4 color : COLOR;   // 頂点カラー(影の出やすさ R・境界のずらし G。メッシュに無ければ白)
     UNITY_VERTEX_INPUT_INSTANCE_ID // GPU インスタンシング(RenderMeshInstanced)用
 };
@@ -77,7 +77,7 @@ Varyings GalaxyToonVert(Attributes input)
     output.tangentWS = float4(normalInputs.tangentWS, input.tangentOS.w * GetOddNegativeScale());
     // 影だけに使う法線: 接空間 → ワールド。整えた法線は影の形だけに使い、ハイライト・リムは元の法線のまま
     output.shadowNormalWS = 0;
-    if (dot(input.shadowNormalTS, input.shadowNormalTS) > 0.25)
+    if (_ShadowNormalOn > 0.5 && dot(input.shadowNormalTS, input.shadowNormalTS) > 0.25) // メッシュに無い UV は 0 とは限らない(別の値が入る)ので、マテリアルで使うと決めたときだけ
     {
         float3 bitangentWS = cross(normalInputs.normalWS, normalInputs.tangentWS) * (input.tangentOS.w >= 0 ? 1.0 : -1.0) * GetOddNegativeScale();
         output.shadowNormalWS = normalize(normalInputs.tangentWS * input.shadowNormalTS.x + bitangentWS * input.shadowNormalTS.y + normalInputs.normalWS * input.shadowNormalTS.z);
@@ -728,10 +728,11 @@ half4 GalaxyToonFrag(Varyings input, FRONT_FACE_TYPE isFront : FRONT_FACE_SEMANT
         // SDF 顔影: 描いた顔影の上に、影のマップの形(鼻・頬)を重ねない。顔を正面から見るほど落ち影を使わず、横顔では戻す
         castShadow = lerp(castShadow, 1.0h, _FaceSdfIgnoreShadow * smoothstep(0.2h, 0.6h, saturate(dot(faceForward, viewDir))));
     #endif
-    #if defined(_CONTACT_SHADOW)
-        if (_LightSource < 1.5h) castShadow = min(castShadow, GalaxyContactShadow(input.positionWS, input.positionCS, lightDir, normal, input.uv));
-    #endif
     lambert *= lerp(1.0h, castShadow, _CastShadowAmount);
+    #if defined(_CONTACT_SHADOW)
+        // 接地影・自己影は使うと決めて足す影なので、シーンの落ち影を受けない設定(_CastShadowAmount=0)でも掛ける
+        if (_LightSource < 1.5h) lambert *= GalaxyContactShadow(input.positionWS, input.positionCS, lightDir, normal, input.uv);
+    #endif
     // キャラ専用のシャドウマップ(あれば)。使うと決めて足す影なので、シーンの落ち影を受けない設定(_CastShadowAmount=0)でも掛ける。
     // 明暗境界のすぐ明るい側は、シーンの落ち影と同じく弱める
     if (_LightSource < 1.5h)

@@ -349,6 +349,7 @@ namespace GalaxyToon.Editor
                 // 輪郭線
                 { "_OutlineWidth", "Outline Width (cm)" },
                 { "_OutlineSmoothNormal", "Use Smoothed Normals for Outline (for meshes baked with the tool; no breaks at corners)" },
+                { "_ShadowNormalOn", "Use Shadow-Only Normals (for meshes with normals in UV7)" },
                 { "_OutlineColor", "Outline Color" },
                 { "_OutlineTexBlend", "Mix Texture Color into Outline" },
                 { "_OutlineColorTrace", "Color Trace (saturated, slightly darker base color for anime line art)" },

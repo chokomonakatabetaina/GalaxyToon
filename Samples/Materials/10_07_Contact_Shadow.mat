@@ -17,7 +17,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: 2501
   stringTagMap:
     RenderType: Opaque
   disabledShaderPasses: []
@@ -500,7 +500,7 @@ Material:
     - _OutlineLightWidth: 0
     - _OutlineLit: 1
     - _OutlineNearClamp: 0.5
-    - _OutlineSmoothNormal: 1
+    - _OutlineSmoothNormal: 0
     - _OutlineTexBlend: 0.5
     - _OutlineVertexAlpha: 0
     - _OutlineVertexColor: 0
@@ -543,9 +543,9 @@ Material:
     - _ScratchAmount: 0
     - _ScratchScale: 12
     - _SdfFollowHead: 0
-    - _SelfShadowLength: 15
-    - _SelfShadowStrength: 0
-    - _SelfShadowThickness: 10
+    - _SelfShadowLength: 40
+    - _SelfShadowStrength: 1
+    - _SelfShadowThickness: 30
     - _Shade1Edge: 0.5
     - _Shade1Soft: 0.1
     - _Shade2Edge: 0.3
@@ -555,6 +555,7 @@ Material:
     - _ShadeMapOn: 0
     - _ShadowAmbientTint: 0
     - _ShadowBiasStrength: 0.5
+    - _ShadowNormalOn: 0
     - _ShadowPattern: 0
     - _ShadowPatternDensity: 160
     - _ShadowPatternWidth: 0.35

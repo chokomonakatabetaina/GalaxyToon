@@ -25,10 +25,32 @@ namespace GalaxyToon.Editor
             public string Jp, En;
             public Action<Material> Setup;
             public Action<GameObject, Material> Build; // コンポーネントを付ける(無ければ球だけ)
+            public Vector3? Light;                     // この見本だけを照らす光の向き(オイラー角)。逆光など、光の向きで見え方が決まる見本に
         }
+
+        // 見本ごとに、見た目を確かめながら決めた値(見本の作り方で入れた値の上に重ねる)。キーはマテリアル名の番号を除いた部分
+        private static readonly Dictionary<string, Action<Material>> Tuned = new Dictionary<string, Action<Material>>
+        {
+            { "Depth_Rim", m => { F(m, "_RimEdge", 0.346f); F(m, "_RimSoft", 0.45f); } },
+            { "Emissive_Panel", m => { F(m, "_EmissionFlicker", 3.23f); C(m, "_EmissionColor", new Color(1.5209f, 1.9688f, 2.0026f, 1f)); } },
+            { "Emission_Layer_2", m => { F(m, "_EmissionFlicker", 0.72f); } },
+            { "Outline", m => { F(m, "_AnimeOutlinePixel", 0.277f); F(m, "_OutlineColorTrace", 0.285f); F(m, "_OutlineVertexColor", 1f); F(m, "_OutlineWidth", 0.415f); F(m, "_OutlineZOffset", 0.27f); C(m, "_OutlineColor", new Color(0.264f, 0.096f, 0.129f, 1f)); } },
+            { "Magma", m => { m.SetTextureScale("_EmissionMap", new Vector2(1.67f, 1.29f)); F(m, "_EmissionFlicker", 0.77f); F(m, "_RimFalloff", 20.4f); V(m, "_EmissionScroll", new Vector4(0f, 0.27f, 0f, 0f)); C(m, "_RimColor", new Color(0.585f, 0.111f, 0.097f, 0.4f)); } },
+            { "Flowing_Sweat", m => { F(m, "_FoamFlow", 0.28f); F(m, "_FoamMerge", 0.508f); F(m, "_FoamPop", 0.212f); F(m, "_FoamScale", 64f); F(m, "_LiquidFlow", 0.15f); F(m, "_LiquidGloss", 0.77f); F(m, "_LiquidViscosity", 0.069f); F(m, "_RainAmount", 0.323f); F(m, "_SweatFlow", 0.369f); F(m, "_SweatSize", 0.258f); F(m, "_WetAmount", 0.385f); F(m, "_WetGloss", 1.06f); } },
+            { "Liquid", m => { F(m, "_AnimeOutlinePixel", 0.562f); F(m, "_LiquidFlow", 0.42f); F(m, "_LiquidGloss", 1.49f); F(m, "_OutlineColorTrace", 0.438f); F(m, "_OutlineLit", 0.385f); F(m, "_OutlineWidth", 0.849f); F(m, "_SheerAmount", 0.696f); F(m, "_WetAmount", 0.462f); F(m, "_WetGloss", 1.54f); C(m, "_BaseColor", new Color(0.9528f, 0.7114f, 0.445f, 1f)); C(m, "_LiquidColor", new Color(1f, 1f, 1f, 0.902f)); C(m, "_OutlineColor", new Color(0.2075f, 0.0597f, 0.0748f, 1f)); C(m, "_SssColor", new Color(1f, 0.6283f, 0.5896f, 0.65f)); } },
+            { "Sticky", m => { F(m, "_DirtScale", 39.1f); F(m, "_LiquidAmount", 0.569f); F(m, "_LiquidFlow", 1.23f); F(m, "_LiquidGloss", 0f); F(m, "_LiquidScale", 30.7f); F(m, "_LiquidViscosity", 0.723f); F(m, "_RainFlowAmount", 0.238f); C(m, "_BaseColor", new Color(0.783f, 0.616f, 0.5356f, 1f)); C(m, "_LiquidColor", new Color(0.95f, 0.88f, 0.7f, 0.8667f)); C(m, "_NetDentColor", new Color(1f, 0.9104f, 0.9104f, 1f)); } },
+            { "Rain_Soak", m => { F(m, "_WetAmount", 0.315f); } },
+            { "SSS", m => { F(m, "_SheerAmount", 0.806f); F(m, "_SssShadowBleed", 0.536f); C(m, "_SssColor", new Color(1f, 0.6773f, 0.6557f, 1f)); } },
+            { "Sheer_Stockings", m => { F(m, "_NetDentHighlight", 0.354f); F(m, "_NetDentStrength", 0.659f); F(m, "_NetDentWidth", 2.18f); F(m, "_OutlineBoilFps", 10.91f); F(m, "_OutlineTexBlend", 0.479f); F(m, "_OutlineWidth", 0.241f); F(m, "_SheerAmount", 0.865f); F(m, "_SheerPower", 1.5f); F(m, "_SheerSheen", 0.506f); C(m, "_SheerSkinColor", new Color(1f, 0.8856f, 0.8538f, 1f)); } },
+            { "Fishnet_Dent", m => { F(m, "_DissolveEdgeWidth", 0.08f); F(m, "_DissolveNoiseAmount", 0.6f); F(m, "_DissolveNoiseScale", 2.68f); F(m, "_NetDentHighlight", 0.485f); F(m, "_NetDentStrength", 1.063f); F(m, "_NetDentWidth", 0.91f); F(m, "_NetThreshold", 0.743f); F(m, "_OutlineTexBlend", 0.69f); C(m, "_BaseColor", new Color(0.9824f, 1f, 0.9764f, 1f)); C(m, "_NetDentColor", new Color(1f, 0f, 0f, 0.7804f)); C(m, "_OutlineColor", new Color(0.5943f, 0.1318f, 0.2273f, 1f)); } },
+            { "Shade_Map", m => { F(m, "_OutlineWidth", 0.139f); } },
+            { "Dual_Angel_Ring", m => { F(m, "_AnisoBlur", 0.489f); F(m, "_AnisoBorder", 0.395f); F(m, "_AnisoJitterScale", 38f); F(m, "_AnisoShadowMask", 0f); F(m, "_AnisoSharpness", 34.1f); F(m, "_AnisoShift", 0.152f); C(m, "_NetDentColor", new Color(0.7547f, 0.5091f, 0.5091f, 1f)); } },
+            { "Angel_Ring_(MatCap)", m => { F(m, "_AnisoBlur", 0.935f); F(m, "_AnisoJitterStrength", 0.234f); F(m, "_AnisoShadowMask", 0.489f); } },
+        };
 
         private static string root, matDir, texDir;
         private static Mesh sphereMesh;
+        private static Material whiteLiquid; // 白い液の素材(見本で作り、プレビューのサルでも使う)
         private static Vector2 front;
         private static readonly Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
@@ -79,12 +101,21 @@ namespace GalaxyToon.Editor
                     go.transform.position = new Vector3(i * StepX, y, 0f);
                     Material m = NewMaterial(shader, $"{r + 1:00}_{i + 1:00}_{Safe(s.En)}", i);
                     s.Setup?.Invoke(m);
+                    if (Tuned.TryGetValue(Safe(s.En), out Action<Material> tune)) tune(m);
                     GalaxyToonGUI.Apply(m);
                     if (s.Build != null) s.Build(go, m);
                     else AddSphere(go, m);
+                    if (s.Light.HasValue)
+                    {
+                        // この見本だけを照らす光(キャラ 1 体だけのライト)
+                        var own = new GameObject("Sample Light").AddComponent<GalaxyToonLight>();
+                        own.transform.SetParent(go.transform, false);
+                        own.transform.rotation = Quaternion.Euler(s.Light.Value);
+                        own.target = go;
+                    }
                     Label(go.transform, s.Jp + "\n" + s.En, new Vector3(0f, -0.6f, 0f), font, 0.035f, TextAnchor.UpperCenter, Color.white);
                     viewer.entries.Add(new GalaxyToonSampleViewer.Entry { target = go.transform, title = s.Jp + " / " + s.En });
-                    if (s.Build == null && !NotForPreview.Contains(s.En)) previewChoices.Add((m, s.Jp + " / " + s.En));
+                    previewChoices.Add((m, s.Jp + " / " + s.En)); // 着せ替えの ◀ ▶ で、すべての見本の素材を選べる
                 }
             }
             BuildPreview(viewer, shader, previewChoices, rows.Count);
@@ -96,13 +127,6 @@ namespace GalaxyToon.Editor
         }
 
         // ---------------------------------------------------------------- 並べる機能
-
-        // サルに着せても正しく見えない見本: 球の UV に合わせた瞳・頬の位置、顔の向き(GalaxyToonFace)・毛先の高さが要る物。
-        // 部品で動く物(糸・涙・雨・転送など、Build のある見本)は、もともとサルには着せない
-        private static readonly HashSet<string> NotForPreview = new HashSet<string>
-        {
-            "Eyes Crisp", "Eyes Teary", "Eyes Sparkle", "Eyelid Shadow / Caustic", "Blush", "Face SDF Shadow", "Flat Face Shading", "Hair Tip Gradient",
-        };
 
         /// <summary>球の顔に瞳を描く(瞳のテクスチャと、カメラ側の UV に合わせた瞳の範囲)。</summary>
         private static void Eyes(Material m)
@@ -136,9 +160,9 @@ namespace GalaxyToon.Editor
                 }),
                 ("影・ライト\nShadow / Light", new List<Sample>
                 {
-                    S("影 2段", "2-Step Shadow", m => { C(m, "_Shade2Tint", new Color(0.55f, 0.5f, 0.7f, 1f)); F(m, "_Shade2Edge", 0.3f); F(m, "_Shade2Soft", 0.05f); }),
-                    S("影 3段", "3-Step Shadow", m => { C(m, "_Shade2Tint", new Color(0.6f, 0.55f, 0.75f, 1f)); F(m, "_Shade2Edge", 0.35f); C(m, "_Shade3Tint", new Color(0.35f, 0.3f, 0.5f, 1f)); F(m, "_Shade3Edge", 0.15f); }),
-                    S("影のランプ", "Shadow Ramp", m => { m.SetTexture("_ShadowRampTex", Ramp("Shadow")); F(m, "_ShadowRampRows", 4f); F(m, "_ShadowRampRow", 1f); }),
+                    S("影 2段", "2-Step Shadow", m => { C(m, "_BaseColor", new Color(1f, 0.85f, 0.75f)); C(m, "_Shade1Tint", new Color(0.8f, 0.6f, 0.75f, 1f)); F(m, "_Shade1Edge", 0.72f); F(m, "_Shade1Soft", 0.02f); C(m, "_Shade2Tint", new Color(0.35f, 0.25f, 0.6f, 1f)); F(m, "_Shade2Edge", 0.48f); F(m, "_Shade2Soft", 0.02f); }),
+                    S("影 3段", "3-Step Shadow", m => { C(m, "_BaseColor", new Color(1f, 0.85f, 0.75f)); C(m, "_Shade1Tint", new Color(0.85f, 0.7f, 0.8f, 1f)); F(m, "_Shade1Edge", 0.8f); F(m, "_Shade1Soft", 0.02f); C(m, "_Shade2Tint", new Color(0.55f, 0.4f, 0.7f, 1f)); F(m, "_Shade2Edge", 0.6f); F(m, "_Shade2Soft", 0.02f); C(m, "_Shade3Tint", new Color(0.2f, 0.15f, 0.45f, 1f)); F(m, "_Shade3Edge", 0.4f); F(m, "_Shade3Soft", 0.02f); }),
+                    S("影のランプ", "Shadow Ramp", m => { C(m, "_BaseColor", Color.white); m.SetTexture("_ShadowRampTex", Ramp("Shadow")); F(m, "_ShadowRampRows", 4f); F(m, "_ShadowRampRow", 0f); F(m, "_Shade1Edge", 0.65f); F(m, "_Shade1Soft", 0.5f); }),
                     S("ハイライトのランプ", "Specular Ramp", m => { C(m, "_SpecularColor", new Color(1f, 1f, 1f, 0.8f)); F(m, "_SpecularSize", 0.15f); m.SetTexture("_SpecularRampTex", Ramp("Specular")); F(m, "_ShadowRampRows", 4f); }),
                     S("アニメ塗り", "Anime Shading", m => { C(m, "_BaseColor", skin); P(m, "アニメ塗り"); F(m, "_OutlineWidth", 0.08f); }),
                     S("顔の陰影を平らに", "Flat Face Shading", m => { F(m, "_FaceShading", 0.8f); F(m, "_FaceSphere", 1f); }),
@@ -151,20 +175,20 @@ namespace GalaxyToon.Editor
                     S("マットキャップ", "MatCap", m => { m.SetTexture("_MatCapTex", Tex("MatCap")); C(m, "_MatCapColor", Color.white); }),
                     S("マットキャップ2", "MatCap 2", m => { m.SetTexture("_MatCap2Tex", Tex("MatCap")); C(m, "_MatCap2Color", new Color(0.4f, 0.8f, 1f, 1f)); }),
                     S("異方性 (天使の輪)", "Anisotropic", m => { C(m, "_BaseColor", new Color(0.35f, 0.25f, 0.2f)); C(m, "_AnisoColor", new Color(1f, 0.95f, 0.85f, 0.8f)); }),
-                    S("逆光", "Backlight", m => C(m, "_BackLightTint", new Color(1f, 0.6f, 0.4f, 1f))),
-                    S("リムライト", "Rim Light", m => { C(m, "_RimColor", new Color(0.6f, 0.9f, 1f, 1f)); F(m, "_RimEdge", 0.5f); }),
+                    Lit(S("逆光", "Backlight", m => { C(m, "_BaseColor", new Color(0.3f, 0.3f, 0.45f)); C(m, "_BackLightTint", new Color(2.5f, 1.2f, 0.5f, 1f)); F(m, "_BackLightEdge", 0.15f); F(m, "_BackLightSoft", 0.15f); F(m, "_BackLightFocus", 2f); }), new Vector3(15f, 150f, 0f)), // 後ろからの光で縁が光る
+                    S("リムライト", "Rim Light", m => { C(m, "_BaseColor", new Color(0.15f, 0.2f, 0.4f)); C(m, "_RimColor", new Color(0.6f, 1.6f, 2f, 1f)); F(m, "_RimEdge", 0.45f); F(m, "_RimSoft", 0.15f); F(m, "_RimFalloff", 2f); }),
                     S("深度リム", "Depth Rim", m => { C(m, "_RimColor", Color.white); F(m, "_DepthRim", 1f); }),
-                    S("輪郭線", "Outline", m => { F(m, "_OutlineWidth", 0.3f); C(m, "_OutlineColor", new Color(0.15f, 0.1f, 0.2f, 1f)); }),
+                    S("輪郭線", "Outline", m => { F(m, "_OutlineWidth", 1.2f); C(m, "_OutlineColor", new Color(1f, 0.5f, 0.1f, 1f)); F(m, "_OutlineLit", 0f); F(m, "_OutlineTexBlend", 0f); }), // 暗い背景でも見える色・太さ
                 }),
                 ("発光・レイヤー\nEmission / Layers", new List<Sample>
                 {
-                    S("発光 (明滅)", "Emission (Blink)", m => { C(m, "_EmissionColor", new Color(0.2f, 1.2f, 2f, 1f)); F(m, "_EmissionFlicker", 1f); }),
-                    S("発光 (流れる)", "Emission (Scroll)", m => { m.SetTexture("_EmissionMap", Tex("Stripes")); C(m, "_EmissionColor", new Color(2f, 0.6f, 0.2f, 1f)); F(m, "_EmissionAnimate", 1f); V(m, "_EmissionScroll", new Vector4(0f, 0.3f, 0f, 0f)); }),
-                    S("発光レイヤー2", "Emission Layer 2", m => { m.SetTexture("_Emission2Map", Tex("Stars")); C(m, "_Emission2Color", new Color(2f, 2f, 0.6f, 1f)); F(m, "_Emission2Animate", 1f); V(m, "_Emission2Scroll", new Vector4(0.05f, 0f, 0f, 0f)); }),
+                    S("発光 (明滅)", "Emission (Blink)", m => { C(m, "_BaseColor", new Color(0.2f, 0.25f, 0.4f)); m.SetTexture("_EmissionMap", Tex("Checker")); C(m, "_EmissionColor", new Color(0.1f, 0.9f, 1.6f, 1f)); F(m, "_EmissionFlicker", 1f); }), // 市松の明るいマスが明滅する
+                    S("発光 (流れる)", "Emission (Scroll)", m => { C(m, "_BaseColor", new Color(0.12f, 0.08f, 0.08f)); m.SetTexture("_EmissionMap", Tex("Stripes")); C(m, "_EmissionColor", new Color(2f, 0.6f, 0.2f, 1f)); F(m, "_EmissionAnimate", 1f); V(m, "_EmissionScroll", new Vector4(0f, 0.3f, 0f, 0f)); }),
+                    S("発光レイヤー2", "Emission Layer 2", m => { C(m, "_BaseColor", new Color(0.1f, 0.08f, 0.2f)); m.SetTexture("_EmissionMap", Tex("Stripes")); C(m, "_EmissionColor", new Color(0.2f, 0.5f, 2f, 1f)); m.SetTexture("_Emission2Map", Tex("Stars")); m.SetTextureScale("_Emission2Map", new Vector2(2f, 2f)); C(m, "_Emission2Color", new Color(3f, 3f, 0.8f, 1f)); F(m, "_Emission2Animate", 1f); V(m, "_Emission2Scroll", new Vector4(0.05f, 0f, 0f, 0f)); }), // 1 層目(青い縞)の上に、2 層目(黄色い星)が流れる
                     S("レイヤー1 (流れる)", "Layer 1 (Scroll)", m => { m.SetTexture("_Layer1Tex", Tex("Stripes")); C(m, "_Layer1Color", new Color(0.3f, 0.5f, 1f, 1f)); F(m, "_Layer1Animate", 1f); V(m, "_Layer1Scroll", new Vector4(0.1f, 0f, 0f, 0f)); }),
                     S("レイヤー2 (明滅)", "Layer 2 (Blink)", m => { m.SetTexture("_Layer2Tex", Tex("Stars")); C(m, "_Layer2Color", new Color(1f, 0.4f, 0.8f, 1f)); F(m, "_Layer2Blink", 1.5f); }),
-                    S("レイヤー3 (光る)", "Layer 3 (Unlit)", m => { m.SetTexture("_Layer3Tex", Tex("Checker")); C(m, "_Layer3Color", new Color(0.4f, 1f, 0.6f, 0.6f)); F(m, "_Layer3Unlit", 1f); }),
-                    S("マグマ", "Magma", m => { P(m, "マグマ"); m.SetTexture("_EmissionMap", Tex("Stars")); }),
+                    S("レイヤー3 (光る)", "Layer 3 (Unlit)", m => { C(m, "_BaseColor", new Color(0.1f, 0.12f, 0.12f)); m.SetTexture("_Layer3Tex", Tex("Checker")); C(m, "_Layer3Color", new Color(0.4f, 1f, 0.6f, 0.9f)); F(m, "_Layer3Unlit", 1f); }),
+                    S("マグマ", "Magma", m => { P(m, "マグマ"); C(m, "_BaseColor", new Color(0.1f, 0.07f, 0.06f)); m.SetTexture("_EmissionMap", Tex("Magma")); C(m, "_EmissionColor", new Color(4f, 1f, 0.12f, 1f)); F(m, "_EmissionFlicker", 0.77f); F(m, "_EmissionAnimate", 1f); V(m, "_EmissionScroll", new Vector4(0f, 0.05f, 0f, 0f)); }), // 黒い岩肌の割れ目が光る
                     S("発光パネル", "Emissive Panel", m => P(m, "発光パネル")),
                 }),
                 ("濡れ・汗・液体\nWet / Sweat / Liquid", new List<Sample>
@@ -230,7 +254,7 @@ namespace GalaxyToon.Editor
                     S("ハッチング", "Hatching", m => { F(m, "_MangaStyle", 1f); Shadowy(m); }),
                     S("網点", "Halftone", m => { F(m, "_MangaStyle", 2f); Shadowy(m); }),
                     S("カメラからの補助光", "Fill Light", m => { C(m, "_FillLightColor", new Color(1f, 0.9f, 0.85f, 0.8f)); Shadowy(m); }),
-                    S("接地影", "Contact Shadow", m => { F(m, "_ContactShadow", 1f); F(m, "_ContactShadowStrength", 1f); F(m, "_ContactShadowLength", 10f); }, BuildContactShadow),
+                    Lit(S("接地影", "Contact Shadow", m => { F(m, "_ContactShadow", 1f); F(m, "_ContactShadowStrength", 1f); F(m, "_ContactShadowLength", 10f); F(m, "_SelfShadowStrength", 1f); F(m, "_SelfShadowLength", 40f); F(m, "_SelfShadowThickness", 30f); }, BuildContactShadow), new Vector3(40f, 30f, 0f)), // 左上の手前からの光で、浮かせた玉の影が球の正面に落ちる
                     S("スカートの影", "Skirt Shadow", m => { C(m, "_BaseColor", skin); F(m, "_SkirtShadowReceive", 1f); }, BuildSkirtShadow),
                 }),
                 ("瞳・髪・リム 2\nEyes / Hair / Rim 2", new List<Sample>
@@ -276,10 +300,15 @@ namespace GalaxyToon.Editor
             F(liquid, "_LightFloor", 0.9f);
             F(liquid, "_OutlineWidth", 0f); // 不透明にすると輪郭線が付き、細い筋が黒く見える
             GalaxyToonGUI.Apply(liquid);
-            var drip = AddTears(go, m, liquid, new Vector3(-0.1f, 0.3f, -0.38f), new Vector3(0.14f, 0.25f, -0.4f));
-            // 太い筋で途切れずに伝う(止まっては進む・次の液が重なると粒が並んで見えるので、間隔を空ける)
-            drip.viscosity = 0.9f; drip.strandLength = 0.3f; drip.speed = 0.1f; drip.stopAndGo = 0.15f; drip.poolTime = 1.2f; drip.poolSize = 1.6f;
-            drip.streakRadius = 0.022f; drip.dropRadius = 0.032f; drip.surfaceOffset = 0.006f; drip.climb = 0.02f; drip.interval = 5f; drip.fadeTime = 3f;
+            whiteLiquid = liquid;
+            Viscous(AddTears(go, m, liquid, new Vector3(-0.1f, 0.3f, -0.38f), new Vector3(0.14f, 0.25f, -0.4f)), 1f);
+        }
+
+        /// <summary>白い液の流れ方。太い筋で途切れずに伝う(止まっては進む・次の液が重なると粒が並んで見えるので、間隔を空ける)。size で太さ・長さを大きくする</summary>
+        private static void Viscous(GalaxyTears drip, float size)
+        {
+            drip.viscosity = 0.9f; drip.strandLength = 0.3f * size; drip.speed = 0.1f * size; drip.stopAndGo = 0.15f; drip.poolTime = 1.2f; drip.poolSize = 1.6f;
+            drip.streakRadius = 0.022f * size; drip.dropRadius = 0.032f * size; drip.surfaceOffset = 0.006f * size; drip.climb = 0.02f * size; drip.interval = 5f; drip.fadeTime = 3f;
         }
 
         /// <summary>球を「顔」(スキンメッシュ)にして、指定の場所(ローカル)から GalaxyTears を流す。</summary>
@@ -430,12 +459,14 @@ namespace GalaxyToon.Editor
 
         private static void BuildContactShadow(GameObject go, Material m)
         {
-            // 球のすぐ前に小さい球を浮かせる。接点のまわりに細い影(カメラの深度テクスチャが要る)
+            // 球の正面と光(左上の手前)の間に小さい玉を浮かせる。玉の影が、画面の深度をたどって球の正面に落ちる(カメラの深度テクスチャが要る)
             AddSphere(go, m);
             var ball = AddSphere(new GameObject("Ball"), NewMaterial(m.shader, "Contact_Ball", 3)).transform.parent;
             ball.SetParent(go.transform, false);
-            ball.localPosition = new Vector3(-0.12f, -0.1f, -0.6f); // 光(右上の手前から)の反対側、球の左下に細い影が出る
-            ball.localScale = Vector3.one * 0.2f;
+            ball.localPosition = new Vector3(-0.15f, 0.125f, -0.572f);
+            ball.localScale = Vector3.one * 0.16f;
+            // 深度テクスチャを「不透明の後に写す」設定(URP の既定)でも玉の深度を読めるよう、受ける球は不透明の後に描く
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.GeometryLast + 1;
         }
 
         private static void BuildSkirtShadow(GameObject go, Material m)
@@ -547,6 +578,27 @@ namespace GalaxyToon.Editor
             choices.Insert(1, (stringsLook, "糸 (球で引く) / Sticky Strings (pull with the ball)"));
             viewer.preview = r;
             viewer.previewMaterials = choices.ConvertAll(c => c.Item1).ToArray();
+            // 部品で動く見本は、その素材のときだけサルにも部品を出す(白い液: 頭から垂れる)
+            viewer.previewExtras = new GameObject[choices.Count];
+            int viscous = choices.FindIndex(c => c.Item2.EndsWith("GalaxyTears (viscous)"));
+            if (viscous >= 0 && whiteLiquid != null)
+            {
+                var dripRoot = new GameObject("White Drip");
+                dripRoot.transform.SetParent(go.transform, false);
+                var face = dripRoot.AddComponent<SkinnedMeshRenderer>(); // 液が伝う形を読むだけ(描くのはサル本体)
+                face.sharedMesh = mesh;
+                face.forceRenderingOff = true;
+                var dripGo = new GameObject("Drip", typeof(MeshFilter), typeof(MeshRenderer));
+                dripGo.transform.SetParent(dripRoot.transform, false);
+                dripGo.GetComponent<MeshRenderer>().sharedMaterial = whiteLiquid;
+                var drip = dripGo.AddComponent<GalaxyTears>();
+                drip.face = face;
+                drip.startVertices = new[] { NearestVertex(new Vector3(-0.3f, 0.65f, 0.7f), mesh), NearestVertex(new Vector3(0.25f, 0.7f, 0.65f), mesh) }; // 額の左右
+                drip.crying = true;
+                Viscous(drip, 2.5f); // サルは見本の球より大きいので、太く・長く
+                dripRoot.SetActive(false);
+                viewer.previewExtras[viscous] = dripRoot;
+            }
             viewer.previewNames = choices.ConvertAll(c => c.Item2).ToArray();
         }
 
@@ -662,15 +714,16 @@ namespace GalaxyToon.Editor
         }
 
         private static Sample S(string jp, string en, Action<Material> setup, Action<GameObject, Material> build = null) => new Sample { Jp = jp, En = en, Setup = setup, Build = build };
+        private static Sample Lit(Sample s, Vector3 euler) { s.Light = euler; return s; }
         private static void F(Material m, string n, float v) => m.SetFloat(n, v);
         private static void C(Material m, string n, Color c) => m.SetColor(n, c);
         private static void V(Material m, string n, Vector4 v) => m.SetVector(n, v);
         private static void P(Material m, string preset) { if (!GalaxyToonGUI.ApplyPreset(m, preset)) Debug.LogWarning("[GalaxyToon] プリセットが見つかりません: " + preset); }
         private static string Safe(string s) { foreach (char c in Path.GetInvalidFileNameChars()) s = s.Replace(c, '_'); return s.Replace(' ', '_'); }
 
-        private static int NearestVertex(Vector3 local)
+        private static int NearestVertex(Vector3 local, Mesh mesh = null)
         {
-            Vector3[] v = sphereMesh.vertices;
+            Vector3[] v = (mesh != null ? mesh : sphereMesh).vertices;
             int best = 0;
             for (int i = 1; i < v.Length; i++) if ((v[i] - local).sqrMagnitude < (v[best] - local).sqrMagnitude) best = i;
             return best;
@@ -688,6 +741,21 @@ namespace GalaxyToon.Editor
             Paint("Checker", n, (x, y) => (x / 32 + y / 32) % 2 == 0 ? new Color(0.95f, 0.95f, 0.95f) : new Color(0.55f, 0.6f, 0.75f));
             Paint("Stripes", n, (x, y) => (x + y) / 16 % 2 == 0 ? Color.white : clear);
             Paint("Stars", n, (x, y) => Hash(x / 8, y / 8) > 0.85f && Vector2.Distance(new Vector2(x % 8, y % 8), new Vector2(3.5f, 3.5f)) < 2.5f ? Color.white : clear);
+            Paint("Magma", n, (x, y) =>
+            {
+                const int cell = 32, cells = n / cell;
+                float d1 = 1e9f, d2 = 1e9f;
+                for (int cy = y / cell - 1; cy <= y / cell + 1; cy++)
+                    for (int cx = x / cell - 1; cx <= x / cell + 1; cx++)
+                    {
+                        int wx = (cx % cells + cells) % cells, wy = (cy % cells + cells) % cells; // 端でつながるように
+                        float d = Vector2.Distance(new Vector2(x, y), new Vector2((cx + 0.15f + 0.7f * Hash(wx, wy)) * cell, (cy + 0.15f + 0.7f * Hash(wx + 57, wy + 13)) * cell));
+                        if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+                    }
+                float crack = Mathf.Clamp01(1f - (d2 - d1) / 7f); // 境目に近いほど明るい
+                float glow = crack * crack + 0.06f * Mathf.Clamp01(1f - d1 / cell); // 割れ目のほかも、うっすら赤い
+                return new Color(glow, glow, glow, 1f);
+            });
             Paint("Lace", n, (x, y) => { float d = Vector2.Distance(new Vector2(x % 32, y % 32), new Vector2(16f, 16f)); return d < 9f || (d > 12f && d < 14f) ? new Color(1f, 1f, 1f, 0f) : Color.white; });
             Paint("MatCap", n, (x, y) =>
             {

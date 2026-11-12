@@ -341,6 +341,7 @@ Shader "GalaxyShader/Toon"
         _EmissionViewColor("発光の、見る角度で変わる色 (A=強さ。縁ほど)", Color) = (0.4, 0.8, 1, 0)
         _VertexColorShadow("頂点カラー R で影を出やすく (R が黒いほど影)", Range(0, 1)) = 0
         _VertexColorBias("頂点カラー G で影の境界をずらす (灰=そのまま)", Range(0, 1)) = 0
+        [ToggleUI] _ShadowNormalOn("影専用の法線を使う (UV7 に法線を入れたメッシュのとき)", Float) = 0
         _SkirtShadowReceive("スカートの影を受ける (スカートの中と裾の下の脚を影に)", Range(0, 1)) = 0
         [Enum(Fill,0,Hatching,1,Halftone,2)] _MangaStyle("影の塗り方 (ベタ・ハッチング・網点)", Float) = 0
         _MangaSpacing("ハッチング・網点の間隔 (画面の px)", Range(2, 24)) = 6
@@ -461,7 +462,7 @@ Shader "GalaxyShader/Toon"
 
         // ---- 輪郭線(Outline パス)
         _OutlineWidth("輪郭線の太さ (cm)", Range(0, 1)) = 0.08
-        [ToggleUI] _OutlineSmoothNormal("輪郭線になめらか法線を使う (ツールで焼いたメッシュのとき。角で線が割れない)", Float) = 1
+        [ToggleUI] _OutlineSmoothNormal("輪郭線になめらか法線を使う (ツールで焼いたメッシュのとき。角で線が割れない)", Float) = 0
         _OutlineColor("輪郭線の色", Color) = (0.25, 0.2, 0.25, 1)
         _OutlineTexBlend("輪郭線にテクスチャ色を混ぜる", Range(0, 1)) = 0.5
         _OutlineColorTrace("色トレス (地の色の彩度を上げて少し暗くしたイラスト風の線色にする)", Range(0, 1)) = 0
