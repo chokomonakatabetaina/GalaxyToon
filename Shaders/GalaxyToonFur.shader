@@ -16,12 +16,12 @@ Shader "GalaxyShader/ToonFur"
         _FurGravity("重力で垂れる", Range(0, 1)) = 0.3
         _FurRootDark("根元の暗さ", Range(0, 1)) = 0.5
         _FurTipColor("毛先の色 (A=混ぜる強さ)", Color) = (1, 1, 1, 0.3)
-        _ShadowColor("影の色", Color) = (0.82, 0.76, 0.85, 1)
-        _ShadowBorder("影の境界", Range(0, 1)) = 0.5
-        _ShadowBlur("影のぼかし", Range(0, 1)) = 0.15
+        _Shade1Tint("影の色", Color) = (0.82, 0.76, 0.85, 1)
+        _Shade1Edge("影の境界", Range(0, 1)) = 0.5
+        _Shade1Soft("影のぼかし", Range(0, 1)) = 0.15
         [HDR] _RimColor("毛先の縁の光 (A=強さ)", Color) = (1, 1, 1, 0.3)
-        _LightMinLimit("明るさの下限", Range(0, 1)) = 0.05
-        _LightMaxLimit("明るさの上限", Range(0, 10)) = 1
+        _LightFloor("明るさの下限", Range(0, 1)) = 0.05
+        _LightCeiling("明るさの上限", Range(0, 10)) = 1
         [HideInInspector] _FurShell("層 (0=根元 1=毛先。GalaxyToonFur が入れる)", Float) = 0
         [HideInInspector] _FurForce("なびく向き (ワールド。GalaxyToonFur が入れる)", Vector) = (0, 0, 0, 0)
     }
@@ -58,12 +58,12 @@ Shader "GalaxyShader/ToonFur"
                 half _FurGravity;
                 half _FurRootDark;
                 half4 _FurTipColor;
-                half4 _ShadowColor;
-                half _ShadowBorder;
-                half _ShadowBlur;
+                half4 _Shade1Tint;
+                half _Shade1Edge;
+                half _Shade1Soft;
                 half4 _RimColor;
-                half _LightMinLimit;
-                half _LightMaxLimit;
+                half _LightFloor;
+                half _LightCeiling;
                 half _FurShell;
                 float4 _FurForce;
             CBUFFER_END
@@ -118,11 +118,11 @@ Shader "GalaxyShader/ToonFur"
                 Light main = GetMainLight();
                 half3 lightDir = main.direction; half3 lightColor = main.color;
                 if (dot(_AdvToonLightDir.xyz, _AdvToonLightDir.xyz) > 1e-4) { lightDir = normalize(_AdvToonLightDir.xyz); lightColor = _AdvToonLightColor.rgb; }
-                lightColor = clamp(lightColor, _LightMinLimit, _LightMaxLimit);
+                lightColor = clamp(lightColor, _LightFloor, _LightCeiling);
                 half3 normal = normalize(input.normalWS);
                 half lambert = saturate(dot(normal, lightDir) * 0.5h + 0.5h);
-                half lit = smoothstep(_ShadowBorder - _ShadowBlur * 0.5h, _ShadowBorder + _ShadowBlur * 0.5h, lambert);
-                half3 color = lerp(albedo.rgb * _ShadowColor.rgb, albedo.rgb, lit);
+                half lit = smoothstep(_Shade1Edge - _Shade1Soft * 0.5h, _Shade1Edge + _Shade1Soft * 0.5h, lambert);
+                half3 color = lerp(albedo.rgb * _Shade1Tint.rgb, albedo.rgb, lit);
                 color = lerp(color, _FurTipColor.rgb, t * t * _FurTipColor.a);       // 毛先の色
                 color *= lerp(1.0h - _FurRootDark, 1.0h, t);                          // 根元は暗い(毛の重なりの影)
                 half3 viewDir = SafeNormalize(GetWorldSpaceViewDir(input.positionWS));

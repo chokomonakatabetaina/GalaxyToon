@@ -25,7 +25,7 @@ namespace GalaxyToon.Editor
         private static double cpuSum, gpuSum; private static int cpuN, gpuN;
         private static readonly StringBuilder log = new StringBuilder();
 
-        [MenuItem("Tools/GalaxyToon/負荷を測る (再生中のシーン)")]
+        [MenuItem("Tools/GalaxyToon/負荷を測る (再生中のシーン)", false, 63)]
         public static void Start()
         {
             if (!Application.isPlaying) { Debug.LogWarning("[負荷] 再生中に実行してください"); return; }

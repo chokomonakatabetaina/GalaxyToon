@@ -28,7 +28,7 @@ namespace GalaxyToon.Editor
 
         private static readonly int[] Sizes = { 256, 512, 1024, 2048, 4096 };
 
-        [MenuItem("Tools/GalaxyToon/ノーマルマップを作る (テクスチャから)")]
+        [MenuItem("Tools/GalaxyToon/ノーマルマップを作る (テクスチャから)", false, 41)]
         public static void Open() => GetWindow<GalaxyToonNormalBaker>("ノーマルマップ");
 
         private void OnSelectionChange()
@@ -125,7 +125,8 @@ namespace GalaxyToon.Editor
         /// <summary>テクスチャからノーマルマップを作って PNG に保存し、ノーマルマップとして読み込む。戻り値は保存先。</summary>
         public static string Bake(Texture2D source, string savePath, float strength, int blur, int detailRadius, bool invert, int maxTextureSize)
         {
-            int w = Mathf.Min(source.width, maxTextureSize), h = Mathf.Min(source.height, maxTextureSize);
+            float shrink = Mathf.Min(1f, maxTextureSize / (float)Mathf.Max(source.width, source.height)); // 縦横を同じ比率で縮める(長方形のテクスチャがゆがまない)
+            int w = Mathf.Max(1, Mathf.RoundToInt(source.width * shrink)), h = Mathf.Max(1, Mathf.RoundToInt(source.height * shrink));
             Color[] src = ReadPixels(source, w, h);
 
             // 高さ = 明るさ(0〜1)
@@ -187,6 +188,9 @@ namespace GalaxyToon.Editor
             return pixels;
         }
 
+        /// <summary>繰り返しテクスチャとして端をつなぐ添字(ぼかしの半径がテクスチャより大きくても範囲外を読まない)。</summary>
+        private static int Wrap(int i, int n) => ((i % n) + n) % n;
+
         private static float[] BoxBlur(float[] src, int w, int h, int radius)
         {
             var tmp = new float[src.Length];
@@ -195,21 +199,21 @@ namespace GalaxyToon.Editor
             for (int y = 0; y < h; y++)
             {
                 float sum = 0f;
-                for (int k = -radius; k <= radius; k++) sum += src[y * w + ((k + w) % w)];
+                for (int k = -radius; k <= radius; k++) sum += src[y * w + Wrap(k, w)];
                 for (int x = 0; x < w; x++)
                 {
                     tmp[y * w + x] = sum * inv;
-                    sum += src[y * w + ((x + radius + 1) % w)] - src[y * w + ((x - radius + w) % w)];
+                    sum += src[y * w + Wrap(x + radius + 1, w)] - src[y * w + Wrap(x - radius, w)];
                 }
             }
             for (int x = 0; x < w; x++)
             {
                 float sum = 0f;
-                for (int k = -radius; k <= radius; k++) sum += tmp[((k + h) % h) * w + x];
+                for (int k = -radius; k <= radius; k++) sum += tmp[Wrap(k, h) * w + x];
                 for (int y = 0; y < h; y++)
                 {
                     dst[y * w + x] = sum * inv;
-                    sum += tmp[((y + radius + 1) % h) * w + x] - tmp[((y - radius + h) % h) * w + x];
+                    sum += tmp[Wrap(y + radius + 1, h) * w + x] - tmp[Wrap(y - radius, h) * w + x];
                 }
             }
             return dst;

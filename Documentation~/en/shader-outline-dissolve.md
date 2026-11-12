@@ -20,10 +20,16 @@ Draws back faces pushed out along the normals. Not drawn in **Transparent** rend
 | Use Smoothed Normals for Outline | Uses smoothed normals baked with the tool, so lines don't break or gap at corners |
 | Outline Color | Line color |
 | Mix Texture Color into Outline | How much base color is mixed into the line color |
+| Color Trace | An illustration-style line color: the base color, more saturated and slightly darker |
+| Outline Z Offset | Pushes lines back to hide inner lines at the nose bridge, mouth, and collar (cm) |
 | Match Outline to Light Brightness | Follows the main light's brightness so lines don't stand out in dark scenes |
 | Thinner When Close | How much thinner lines get when the camera is closer than 1 m |
 | Constant Screen-Space Outline Width | At 1, lines don't get thinner with distance (anime lines) |
+| Outline Center Boost / Radius | Thicker lines for characters near the screen center |
+| Outline FOV Keep | Lines don't get thicker in telephoto or thinner in wide angle |
+| Outline Boil / FPS | Hand-drawn style jitter of the line |
 | Outline Width Mask (R) | Varies the width per area by R (black = no line) |
+| Outline Width from Vertex Color R | Multiplies the width by the mesh vertex color R (black = no line). Paint vertex colors to remove lines inside hair, etc. |
 
 ### Baking smoothed normals
 
@@ -48,7 +54,7 @@ Section **Dissolve (Vanish Effect)**: vanish and appear effects. Turns on with *
 | Position: Start Offset | Distance from the object's origin (m). To dissolve from the top, use direction (0, -1, 0) and start = -height |
 | Noise Texture | Uses R as noise. Uses built-in noise if empty |
 | Noise Scale | Fineness of the noise |
-| Noise Strength | Jaggedness of the border. 2 or more uses the noise texture |
+| Noise Strength | Jaggedness of the border when dissolving by direction. A Noise Texture, when set, is always used |
 | Invert | Appears instead of vanishing (for the new outfit in an outfit swap) |
 | Position: Measure by World Height | The line is at the same height across all body parts (for teleport effects) |
 | Edge Width | Width of the glowing border |

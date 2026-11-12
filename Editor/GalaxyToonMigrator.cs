@@ -9,7 +9,7 @@ namespace GalaxyToon.Editor
 {
     /// <summary>ほかのシェーダー(MToon・lilToon・UTS・URP Lit・Standard など)のマテリアルを GalaxyShader/Toon に移す。
     /// 部位(肌・顔・髪・服…)をマテリアル名から推測してプリセットを当て、その上に元の色・テクスチャ・影の境界・輪郭線などを写す。
-    /// VRM(VRoid)のキャラは、選んで実行するだけで GalaxyToonFace・瞳と頬・なめらか法線・髪の影までまとめて設定できる。
+    /// VRM のキャラは、選んで実行するだけで GalaxyToonFace・瞳と頬・なめらか法線・髪の影までまとめて設定できる。
     /// 既定では元のマテリアルは書き換えず、複製を作って Renderer に差し替える(VRM から取り込んだマテリアルは書き換えられないため)。</summary>
     public sealed class GalaxyToonMigrator : EditorWindow
     {
@@ -37,7 +37,7 @@ namespace GalaxyToon.Editor
         private Vector2 scroll;
         private string message;
 
-        [MenuItem("Tools/GalaxyToon/GalaxyToon に移行 (MToon・lilToon・Lit など)")]
+        [MenuItem("Tools/GalaxyToon/GalaxyToon に移行 (MToon・lilToon・Lit など)", false, 0)]
         public static void Open()
         {
             var w = GetWindow<GalaxyToonMigrator>(L("GalaxyToon に移行", "Migrate to GalaxyToon"));
@@ -210,7 +210,7 @@ namespace GalaxyToon.Editor
             return SourceKind.Generic;
         }
 
-        /// <summary>名前から部位を推測する。VRoid の名前(Face_00_SKIN・HairBack_00_HAIR・EyeWhite_00_EYE・Tops_01_CLOTH など)にも合わせてある。</summary>
+        /// <summary>名前から部位を推測する。VRM のキャラによくある名前(Face_00_SKIN・HairBack_00_HAIR・EyeWhite_00_EYE・Tops_01_CLOTH など)にも合わせてある。</summary>
         public static int GuessPart(string name)
         {
             string n = name.ToLowerInvariant();
@@ -400,8 +400,8 @@ namespace GalaxyToon.Editor
 
             // 影色: MToon の影色は「地の色に掛ける色」ではなく影の色そのものなので、地の色で割って掛け算の色に直す
             Color shade = Col(src, new Color(0.97f, 0.81f, 0.86f), "_ShadeColor");
-            dst.SetColor("_ShadowColor", ShadeRatio(baseColor, shade));
-            dst.SetColor("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f));
+            dst.SetColor("_Shade1Tint", ShadeRatio(baseColor, shade));
+            dst.SetColor("_Shade2Tint", new Color(1f, 1f, 1f, 0f));
             Texture main = Tex(src, "_MainTex"), shadeTex = Tex(src, "_ShadeTex", "_ShadeTexture");
             if (shadeTex != null && shadeTex != main) notes.Add(L("影テクスチャ(Shade Texture)はメインテクスチャと違うため写せません。影色は影テクスチャの平均ではなく「影色」から作りました", "The shade texture differs from the main texture and cannot be copied; the shadow color was made from the shade color"));
 
@@ -409,8 +409,8 @@ namespace GalaxyToon.Editor
             float shift = Flt(src, v10 ? -0.05f : 0f, "_ShadingShiftFactor", "_ShadeShift");
             float toony = Flt(src, v10 ? 0.95f : 0.9f, "_ShadingToonyFactor", "_ShadeToony");
             float upper = Mathf.Lerp(1f, shift, toony);
-            dst.SetFloat("_ShadowBorder", Mathf.Clamp01((shift + upper) * 0.25f + 0.5f));
-            dst.SetFloat("_ShadowBlur", Mathf.Clamp01((upper - shift) * 0.5f));
+            dst.SetFloat("_Shade1Edge", Mathf.Clamp01((shift + upper) * 0.25f + 0.5f));
+            dst.SetFloat("_Shade1Soft", Mathf.Clamp01((upper - shift) * 0.5f));
 
             Emission(src, dst, "_EmissionMap", "_EmissionColor");
 
@@ -427,7 +427,7 @@ namespace GalaxyToon.Editor
             if (rim.maxColorComponent > 0.001f)
             {
                 dst.SetColor("_RimColor", new Color(rim.r, rim.g, rim.b, 1f));
-                dst.SetFloat("_RimFresnelPower", Flt(src, 5f, "_RimFresnelPower"));
+                dst.SetFloat("_RimFalloff", Flt(src, 5f, "_RimFresnelPower")); // 読む方は MToon の項目名
             }
 
             // 輪郭線: 0=なし 1=ワールド 2=画面。VRM 0.x のワールドは cm、VRM 1.0 は m
@@ -443,7 +443,7 @@ namespace GalaxyToon.Editor
                 dst.SetFloat("_OutlineTexBlend", 0f);
                 dst.SetFloat("_OutlineLit", Flt(src, 1f, "_OutlineLightingMix"));
                 Texture widthTex = Tex(src, "_OutlineWidthTex", "_OutlineWidthTexture");
-                if (widthTex != null) dst.SetTexture("_OutlineWidthMask", widthTex);
+                if (widthTex != null) dst.SetTexture("_OutlineThicknessMap", widthTex);
             }
 
             // 描画モード・面
@@ -452,10 +452,10 @@ namespace GalaxyToon.Editor
             dst.SetFloat("_Cutoff", Flt(src, 0.5f, "_Cutoff"));
             if (v10) dst.SetFloat("_Cull", Flt(src, 0f, "_DoubleSided") > 0.5f ? 0f : 2f);
             else dst.SetFloat("_Cull", Flt(src, 2f, "_CullMode"));
-            if (v10 && src.HasProperty("_RenderQueueOffset")) dst.SetFloat("_QueueOffset", Mathf.Clamp(src.GetFloat("_RenderQueueOffset"), -5f, 5f));
+            if (v10 && src.HasProperty("_RenderQueueOffset")) dst.SetFloat("_QueueOffset", Mathf.Clamp(src.GetFloat("_RenderQueueOffset"), -9f, 9f));
         }
 
-        // ---- lilToon(GalaxyToon と同じ名前・同じ意味の項目が多いので、そのまま写せる)
+        // ---- lilToon(同じ意味の項目を、lilToon の名前から GalaxyToon の名前へ写す)
         private static void FromLilToon(Material src, Material dst, List<string> notes)
         {
             Color baseColor = Col(src, Color.white, "_Color");
@@ -465,19 +465,20 @@ namespace GalaxyToon.Editor
             if (Flt(src, 0f, "_UseShadow") > 0.5f)
             {
                 float strength = Flt(src, 1f, "_ShadowStrength");
-                Color s1 = Col(src, dst.GetColor("_ShadowColor"), "_ShadowColor"); s1.a *= strength;
-                dst.SetColor("_ShadowColor", s1);
-                Copy(src, dst, "_ShadowBorder", "_ShadowBlur", "_Shadow2ndColor", "_Shadow2ndBorder", "_Shadow2ndBlur", "_Shadow3rdColor", "_Shadow3rdBorder", "_Shadow3rdBlur", "_ShadowStrengthMask");
+                Color s1 = Col(src, dst.GetColor("_Shade1Tint"), "_ShadowColor"); s1.a *= strength;
+                dst.SetColor("_Shade1Tint", s1);
+                Copy(src, dst, "_ShadowBorder>_Shade1Edge", "_ShadowBlur>_Shade1Soft", "_Shadow2ndColor>_Shade2Tint", "_Shadow2ndBorder>_Shade2Edge", "_Shadow2ndBlur>_Shade2Soft",
+                    "_Shadow3rdColor>_Shade3Tint", "_Shadow3rdBorder>_Shade3Edge", "_Shadow3rdBlur>_Shade3Soft", "_ShadowStrengthMask>_ShadeAmountMap");
             }
-            else { dst.SetColor("_ShadowColor", new Color(1f, 1f, 1f, 0f)); dst.SetColor("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)); }
+            else { dst.SetColor("_Shade1Tint", new Color(1f, 1f, 1f, 0f)); dst.SetColor("_Shade2Tint", new Color(1f, 1f, 1f, 0f)); }
 
-            if (Flt(src, 0f, "_UseRim") > 0.5f) Copy(src, dst, "_RimColor", "_RimBorder", "_RimBlur", "_RimFresnelPower");
+            if (Flt(src, 0f, "_UseRim") > 0.5f) Copy(src, dst, "_RimColor", "_RimBorder>_RimEdge", "_RimBlur>_RimSoft", "_RimFresnelPower>_RimFalloff");
             if (Flt(src, 0f, "_UseMatCap") > 0.5f && !IsDummy(Tex(src, "_MatCapTex"))) Copy(src, dst, "_MatCapTex", "_MatCapColor");
             if (Flt(src, 0f, "_UseEmission") > 0.5f) Emission(src, dst, "_EmissionMap", "_EmissionColor");
             else dst.SetColor("_EmissionColor", Color.black);
 
             string shader = src.shader.name.ToLowerInvariant();
-            if (shader.Contains("outline")) Copy(src, dst, "_OutlineWidth", "_OutlineColor", "_OutlineWidthMask");
+            if (shader.Contains("outline")) Copy(src, dst, "_OutlineWidth", "_OutlineColor", "_OutlineWidthMask>_OutlineThicknessMap");
             else dst.SetFloat("_OutlineWidth", 0f);
 
             // 描画モード: _TransparentMode(0=不透明 1=カットアウト 2=半透明…)。無ければシェーダー名
@@ -494,15 +495,15 @@ namespace GalaxyToon.Editor
             Base(src, dst, "_MainTex", baseColor);
             Normal(src, dst, "_NormalMap", "_BumpScale");
 
-            dst.SetColor("_ShadowColor", ShadeRatio(baseColor, Col(src, baseColor, "_1st_ShadeColor")));
-            dst.SetFloat("_ShadowBorder", Flt(src, 0.5f, "_BaseColor_Step"));
-            dst.SetFloat("_ShadowBlur", Flt(src, 0.0001f, "_BaseShade_Feather"));
+            dst.SetColor("_Shade1Tint", ShadeRatio(baseColor, Col(src, baseColor, "_1st_ShadeColor")));
+            dst.SetFloat("_Shade1Edge", Flt(src, 0.5f, "_BaseColor_Step"));
+            dst.SetFloat("_Shade1Soft", Flt(src, 0.0001f, "_BaseShade_Feather"));
             if (src.HasProperty("_2nd_ShadeColor"))
             {
                 Color s2 = ShadeRatio(baseColor, src.GetColor("_2nd_ShadeColor"));
-                dst.SetColor("_Shadow2ndColor", s2);
-                dst.SetFloat("_Shadow2ndBorder", Flt(src, 0f, "_ShadeColor_Step"));
-                dst.SetFloat("_Shadow2ndBlur", Flt(src, 0.0001f, "_1st2nd_Shades_Feather"));
+                dst.SetColor("_Shade2Tint", s2);
+                dst.SetFloat("_Shade2Edge", Flt(src, 0f, "_ShadeColor_Step"));
+                dst.SetFloat("_Shade2Soft", Flt(src, 0.0001f, "_1st2nd_Shades_Feather"));
             }
             if (Tex(src, "_1st_ShadeMap") is Texture t1 && t1 != Tex(src, "_MainTex")) notes.Add(L("1影のテクスチャはメインテクスチャと違うため写せません", "The 1st shade map differs from the main texture and cannot be copied"));
 
@@ -539,7 +540,7 @@ namespace GalaxyToon.Editor
                 dst.SetFloat("_Smoothness", Flt(src, 0f, "_Smoothness", "_Glossiness"));
                 if (gloss != null) dst.SetTexture("_MetallicGlossMap", gloss);
             }
-            if (kind == SourceKind.UrpUnlit) { dst.SetFloat("_LightMinLimit", 1f); dst.SetColor("_ShadowColor", new Color(1f, 1f, 1f, 0f)); }
+            if (kind == SourceKind.UrpUnlit) { dst.SetFloat("_LightFloor", 1f); dst.SetColor("_Shade1Tint", new Color(1f, 1f, 1f, 0f)); }
             if (src.IsKeywordEnabled("_EMISSION")) Emission(src, dst, "_EmissionMap", "_EmissionColor");
             else dst.SetColor("_EmissionColor", Color.black);
 
@@ -590,7 +591,7 @@ namespace GalaxyToon.Editor
             if (c.maxColorComponent > 0f && Tex(src, texName) is Texture t) dst.SetTexture("_EmissionMap", t);
         }
 
-        /// <summary>中身の無い小さなテクスチャか(VRoid は使わない項目にも 8x8 のマットキャップ・平らなノーマルを入れる)。写すと、効かない機能の計算が増える。</summary>
+        /// <summary>中身の無い小さなテクスチャか(使わない項目にも 8x8 のマットキャップ・平らなノーマルが入っているキャラがある)。写すと、効かない機能の計算が増える。</summary>
         private static bool IsDummy(Texture t) => t == null || (t.width <= 16 && t.height <= 16);
 
         /// <summary>影の色そのもの(shade)を、地の色(base)に掛ける色に直す。</summary>
@@ -604,16 +605,19 @@ namespace GalaxyToon.Editor
         private static void Copy(Material src, Material dst, params string[] names)
         {
             Shader s = dst.shader;
-            foreach (string n in names)
+            foreach (string name in names)
             {
-                if (!src.HasProperty(n) || !dst.HasProperty(n)) continue;
+                // "元の名前>GalaxyToon の名前"。同じ名前なら 1 つだけ書く
+                int split = name.IndexOf('>');
+                string from = split < 0 ? name : name.Substring(0, split), n = split < 0 ? name : name.Substring(split + 1);
+                if (!src.HasProperty(from) || !dst.HasProperty(n)) continue;
                 int i = s.FindPropertyIndex(n);
                 switch (s.GetPropertyType(i))
                 {
-                    case UnityEngine.Rendering.ShaderPropertyType.Texture: dst.SetTexture(n, src.GetTexture(n)); break;
-                    case UnityEngine.Rendering.ShaderPropertyType.Color: dst.SetColor(n, src.GetColor(n)); break;
-                    case UnityEngine.Rendering.ShaderPropertyType.Vector: dst.SetVector(n, src.GetVector(n)); break;
-                    default: dst.SetFloat(n, src.GetFloat(n)); break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Texture: dst.SetTexture(n, src.GetTexture(from)); break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Color: dst.SetColor(n, src.GetColor(from)); break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Vector: dst.SetVector(n, src.GetVector(from)); break;
+                    default: dst.SetFloat(n, src.GetFloat(from)); break;
                 }
             }
         }

@@ -12,7 +12,7 @@ namespace GalaxyToon.Editor
     {
         private const int Channel = 7;
 
-        [MenuItem("Tools/GalaxyToon/輪郭線用のなめらか法線を焼く (選択中のプレハブ・オブジェクト)")]
+        [MenuItem("Tools/GalaxyToon/輪郭線用のなめらか法線を焼く (選択中のプレハブ・オブジェクト)", false, 24)]
         private static void BakeSelected()
         {
             int n = 0;
@@ -37,10 +37,10 @@ namespace GalaxyToon.Editor
                     foreach (Material m in r.sharedMaterials) if (m != null && m.shader != null && m.shader.name == "GalaxyShader/Toon") toon = true;
                     if (!toon) continue;
                     Mesh src = r is SkinnedMeshRenderer smr ? smr.sharedMesh : r.GetComponent<MeshFilter>()?.sharedMesh;
-                    if (src == null || (src.hideFlags & HideFlags.DontSave) != 0) continue; // 実行時に作る一時メッシュ(涙・糸)は焼かない
+                    if (src == null || ((src.hideFlags & HideFlags.DontSave) != 0 && !EditorUtility.IsPersistent(src))) continue; // 実行時に作る一時メッシュ(涙・糸)は焼かない(組み込みの Sphere なども DontSave だが、こちらは焼く)
                     Mesh baked = BakeMesh(src);
                     if (!AssetDatabase.IsValidFolder(folder)) { Directory.CreateDirectory(folder); AssetDatabase.ImportAsset(folder); }
-                    string path = $"{folder}/{SafeName(src.name)}.asset";
+                    string path = BakedPath(src, r, folder);
                     var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
                     if (existing != null) { EditorUtility.CopySerialized(baked, existing); Object.DestroyImmediate(baked); baked = existing; }
                     else AssetDatabase.CreateAsset(baked, path);
@@ -56,6 +56,18 @@ namespace GalaxyToon.Editor
                 if (isPrefabAsset) PrefabUtility.UnloadPrefabContents(root);
             }
             return count;
+        }
+
+        /// <summary>焼いたメッシュの保存先。焼いた物の焼き直しは同じファイル。元のメッシュごとに別のファイル
+        /// (別のキャラの同じ名前のメッシュ「Body」などで上書きし合わない。名前の無いメッシュは Renderer の名前を使う)。</summary>
+        private static string BakedPath(Mesh src, Renderer r, string folder)
+        {
+            string own = AssetDatabase.GetAssetPath(src);
+            if (own.StartsWith(folder + "/")) return own;
+            string name = SafeName(string.IsNullOrEmpty(src.name) ? r.name : src.name);
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(src, out string guid, out long localId) && !string.IsNullOrEmpty(guid))
+                return $"{folder}/{name}_{guid.Substring(0, 8)}{(localId != 0 ? "_" + localId : "")}.asset";
+            return AssetDatabase.GenerateUniqueAssetPath($"{folder}/{name}.asset"); // 保存されていないメッシュ(シーンで作った物など)
         }
 
         private static string SafeName(string name)

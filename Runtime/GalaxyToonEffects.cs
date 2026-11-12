@@ -76,8 +76,8 @@ namespace GalaxyToon
         private void OnDisable()
         {
             // 外したら各マテリアルの値に戻す
-            // (GalaxyToonFace の値も消えるが、あちらは毎フレーム入れ直す)
-            foreach (Renderer r in targets) if (r != null) r.SetPropertyBlock(null);
+            // (ほかの部品がブロックに入れた値は残す)
+            ClearOwnValues();
         }
 
         private void LateUpdate()
@@ -96,12 +96,78 @@ namespace GalaxyToon
 
         private void OnValidate() { if (isActiveAndEnabled && block != null) Apply(); } // エディタでスライダーを動かしたとき
 
+        private int writtenMask;
+        private static readonly int[] AmountIds = { WetId, SweatId, LiquidId, FoamId, RainId, DirtId, ScratchId, BlushId };
+
+        // ブロックを作り直すときに残す、ほかの部品の値(GalaxyToonFace・GalaxyToonLight・触れるとへこむ)
+        private static readonly int[] KeepVectors =
+        {
+            Shader.PropertyToID("_TipRestRow"), Shader.PropertyToID("_HeadForward"), Shader.PropertyToID("_PerspectiveCenter"),
+            Shader.PropertyToID("_FaceForward"), Shader.PropertyToID("_FaceRight"), Shader.PropertyToID("_FaceUp"), Shader.PropertyToID("_FaceCenter"),
+            Shader.PropertyToID("_GalaxyLocalLightDir"), Shader.PropertyToID("_GalaxyLocalLightColor"),
+        };
+        private static readonly int[] KeepFloats =
+        {
+            Shader.PropertyToID("_SoftTouch"), Shader.PropertyToID("_Softness"), Shader.PropertyToID("_SoftDepth"), Shader.PropertyToID("_SoftSpread"),
+            Shader.PropertyToID("_SoftBulge"), Shader.PropertyToID("_SoftContactCount"),
+        };
+        private static readonly int[] KeepVectorArrays = { Shader.PropertyToID("_SoftContactA"), Shader.PropertyToID("_SoftContactB") };
+        private static readonly int SoftMaskId = Shader.PropertyToID("_SoftMask");
+        private readonly Dictionary<int, Vector4> keptVectors = new Dictionary<int, Vector4>();
+        private readonly Dictionary<int, float> keptFloats = new Dictionary<int, float>();
+        private readonly Dictionary<int, Vector4[]> keptArrays = new Dictionary<int, Vector4[]>();
+
+        /// <summary>このブロックから、ここで書いた量だけを消す(ブロックには 1 つずつ消す方法が無いので、ほかの部品の値を控えてから作り直す)。</summary>
+        private void Rebuild(MaterialPropertyBlock b)
+        {
+            keptVectors.Clear();
+            keptFloats.Clear();
+            keptArrays.Clear();
+            foreach (int id in KeepVectors) if (b.HasVector(id)) keptVectors[id] = b.GetVector(id);
+            foreach (int id in KeepFloats) if (b.HasFloat(id)) keptFloats[id] = b.GetFloat(id);
+            foreach (int id in KeepVectorArrays) { var arr = b.GetVectorArray(id); if (arr != null && arr.Length > 0) keptArrays[id] = arr; }
+            Texture softMask = b.HasTexture(SoftMaskId) ? b.GetTexture(SoftMaskId) : null;
+            b.Clear();
+            foreach (var pair in keptVectors) b.SetVector(pair.Key, pair.Value);
+            foreach (var pair in keptFloats) b.SetFloat(pair.Key, pair.Value);
+            foreach (var pair in keptArrays) b.SetVectorArray(pair.Key, pair.Value);
+            if (softMask != null) b.SetTexture(SoftMaskId, softMask);
+        }
+
+        /// <summary>ここで書いた量だけを消す(ほかの部品がブロックに入れた値は残す)。</summary>
+        private void ClearOwnValues()
+        {
+            block ??= new MaterialPropertyBlock();
+            foreach (Renderer r in targets)
+            {
+                if (r == null) continue;
+                r.GetPropertyBlock(block);
+                Rebuild(block);
+                r.SetPropertyBlock(block.isEmpty ? null : block);
+            }
+        }
+
+        private float Amount(int i)
+        {
+            switch (i)
+            {
+                case 0: return wet;
+                case 1: return sweat;
+                case 2: return liquid;
+                case 3: return foam;
+                case 4: return rain;
+                case 5: return dirt;
+                case 6: return scratch;
+                default: return blush;
+            }
+        }
+
         private void Apply()
         {
             if (!ShouldDrive)
             {
                 // 量が全部 0 のときは上書きしない(マテリアルに入れた汗・濡れがそのまま見える)。上書きしていた分は消す
-                if (driving) { foreach (Renderer r in targets) if (r != null) r.SetPropertyBlock(null); driving = false; applied = new Vector4(-1f, -1f, -1f, -1f); }
+                if (driving) { ClearOwnValues(); driving = false; writtenMask = 0; applied = new Vector4(-1f, -1f, -1f, -1f); }
                 return;
             }
             driving = true;
@@ -111,18 +177,22 @@ namespace GalaxyToon
             applied = now;
             appliedExtra = extra;
             appliedColor = liquidColor;
+            // 0 の量は書かない(OFF のとき): 汗を出しても、口のマテリアルに入れた液体はそのまま残る。
+            // 前に書いた量が 0 に戻ったときだけ、その値を消すためにブロックを作り直す(ほかの部品がブロックに入れた値は、それぞれ毎フレーム入れ直される)。
+            // それ以外はいまのブロックに上書きする(触れるとへこむ・キャラ専用のライトなどの値を消さない)
+            int mask = 0;
+            for (int i = 0; i < 8; i++) if (overrideMaterials || Amount(i) > 0f) mask |= 1 << i;
+            bool rebuild = (writtenMask & ~mask) != 0;
+            writtenMask = mask;
             foreach (Renderer r in targets)
             {
                 if (r == null) continue;
-                // 0 の量は書かない(OFF のとき): 汗を出しても、口のマテリアルに入れた液体はそのまま残る。
-                // 以前書いた値を消すためブロックは作り直す(GalaxyToonFace の値は毎フレーム入れ直される)
-                block.Clear();
-                Set(WetId, wet); Set(SweatId, sweat); Set(LiquidId, liquid); Set(FoamId, foam);
-                Set(RainId, rain); Set(DirtId, dirt); Set(ScratchId, scratch); Set(BlushId, blush);
+                r.GetPropertyBlock(block);
+                if (rebuild) Rebuild(block);
+                for (int i = 0; i < 8; i++) if ((mask & (1 << i)) != 0) block.SetFloat(AmountIds[i], Amount(i));
                 if (overrideMaterials || liquid > 0f) block.SetColor(LiquidColorId, liquidColor);
                 r.SetPropertyBlock(block);
             }
-            void Set(int id, float v) { if (overrideMaterials || v > 0f) block.SetFloat(id, v); }
         }
     }
 }

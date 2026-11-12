@@ -7,6 +7,7 @@ Sections of `GalaxyShader/Toon` for the face, eyes, cheeks, and hair.
 - [Face](#face)
 - [Eyes](#eyes)
 - [Blush](#blush)
+- [Hair Tip Gradient](#hair-tip-gradient)
 - [Hair Sway](#hair-sway)
 - [Hair Shadow](#hair-shadow)
 - [Stencil](#stencil)
@@ -23,6 +24,8 @@ Removes small shadows around the nose and cheeks for clean, anime-like face shad
 | Shade Face as a Sphere | Bends normals toward a sphere around the head for round, smooth shading (0–1) |
 | Use SDF Face Shadow | When ON, the shadow shape for each light angle comes from an SDF shadow map |
 | SDF Face Shadow | The SDF shadow map. R = shadow border with light from the right, G = from the left |
+| SDF Pitch | How much the shadow shape changes when the sun is high or low |
+| SDF Ignore Cast Shadow | The more the face faces the camera, the less cast shadow (from the nose, etc.) is laid over the SDF shadow. Restored in profile |
 
 ### How to use
 
@@ -48,6 +51,9 @@ Section **Eyes (Depth / Highlights / Teary / Sparkle)**. Adds depth, highlights,
 | Sparkle Color | Color of the cross-shaped stars. Alpha is strength; 0 = none |
 | Sparkle Count | Number of stars |
 | Sparkle Speed | How fast they twinkle |
+| Iris Radius | Iris size, where 1 = half the iris UV area. Positions the eyelid shadow and caustic |
+| Eyelid Shadow Color / Width / Softness | A soft dark band along the top of the iris (A is the strength) |
+| Eye Caustic Color / Size | Brightens the bottom of the iris on the side away from the light (A is the strength) |
 
 - Highlights are placed relative to the screen, so they face the same way even if the iris is rotated or mirrored in the texture.
 - Select the character and run **Tools > GalaxyToon > 瞳の範囲を探す** (Find Iris Area) to fill in the iris areas automatically.
@@ -66,6 +72,16 @@ Section **Blush (Embarrassed)**. Tints the cheeks and adds blush lines.
 | Blush Lines | Amount of diagonal hatching |
 
 Select the character and run **Tools > GalaxyToon > 頬の位置を探す** (Find Cheek Positions) to fill in the cheek positions automatically.
+
+## Hair Tip Gradient
+
+Blends toward another color at the hair tips (whitened or faded tips).
+
+| Item | Description |
+|---|---|
+| Tip Color | Color at the tips. A = strength (0 = off) |
+| Tip Direction | 0 = UV V (root at top), 1 = UV V (root at bottom), 2 = object height (Y; lower = tip) |
+| Start / End | Where the gradient starts and where it is strongest (the tip). In meters for height |
 
 ## Hair Sway
 
@@ -87,6 +103,7 @@ Section **Hair Shadow (Bangs Cast Shadow on Face)**. Casts bangs shadows onto th
 | Receive Hair Shadow | Face, eyes | How much shadow is received. Set to 1 |
 | Hair Shadow Length | Face, eyes | How far the shadow is offset toward the light (cm) |
 | Hair Shadow Gap | Face, eyes | Gap that keeps hair touching the skin from casting too much shadow (cm) |
+| Hair Shadow Softness | Face, eyes | Smooths jagged shadow edges (px) |
 
 ### How to use
 

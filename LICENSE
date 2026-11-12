@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Sample 3D model
+
+Samples/Models/Monkey.obj is "Suzanne", the monkey head built into Blender as
+a mesh primitive (Add > Mesh > Monkey). It was generated with Blender 5.2
+(subdivided and UV-mapped) and exported to OBJ for this package; no external
+model file was downloaded. Blender itself is GPL software, but works created
+with Blender, including its built-in primitives, are not covered by the GPL
+and belong to the person who created them
+(see https://www.blender.org/about/license/). The model is distributed with
+this package under the same MIT License above.

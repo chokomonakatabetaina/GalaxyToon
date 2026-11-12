@@ -18,10 +18,17 @@ GalaxyToon の機能を、画面ごと・機能ごとに説明します。導入
 | [ハイライト・リム・発光](shader-highlight.md) | ハイライト・マットキャップ / 異方性ハイライト / 逆光ライト / リムライト / ラメ・屈折 / 発光 / レイヤー 1〜3 |
 | [濡れ・汗・液体・汚れ](shader-surface-fx.md) | 濡れ / 汗 / 液体 / 泡 / 雨 / 汚れ・傷 |
 | [輪郭線・ディゾルブ・透け](shader-outline-dissolve.md) | 輪郭線 / ディゾルブ / カメラが近いと透ける |
+| [肌・布の質感](shader-skin-cloth.md) | SSS / ストッキング / 網タイツの食い込み / クリアコート・ベルベット |
+| [トゥーンの強化](shader-toon-plus.md) | 光・影・リム・遠近・頂点カラー・接地影・星空・鼻線・パック型マスク・音 |
+| [形を変える・スクリプトから渡す値](shader-shape.md) | ふくらむ / 脚に押される布 / 触れるとへこむ / スカートの影 / 後ろからの光 / 平面化 |
 
 ## シェーダー `GalaxyShader/ToonFur`
 
 - [ファー](shader-fur.md)
+
+## 画面の効果・音・Volume
+
+- [画面の効果・音・Volume](rendering.md) — Galaxy Screen Line / Glow / Paint / Character Shadow / Toon Volume / Audio React
 
 ## エディタツール
 

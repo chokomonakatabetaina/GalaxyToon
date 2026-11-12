@@ -37,6 +37,11 @@ Adds a feature without changing other values.
 | Embarrassed | Face | Cheeks turn slightly red with diagonal blush lines |
 | Glitter | Costumes, props | Tiny mirror flakes twinkle with the light and view direction. Limit where it appears with the Glitter Mask |
 | Fade When Close | Hair, body | Dithers out when the camera is closer than 30 cm and disappears at 10 cm, so you don't see inside when a close camera clips into the model |
+| Skin SSS (Warm Bleed & Translucency) | Skin | A warm band bleeds along the shadow border, and ears, nose tips, and fingertips glow red in back light |
+| Stockings (Sheer) | Legs, sheer cloth | Skin shows through in front; the fiber color gets denser toward the edges |
+| Clear Coat (Dual Gloss) | Enamel, armor, leather | Keeps the base and adds a sharp second reflection on top |
+| Velvet (Soft Fuzz) | Brushed fabric | The fabric softly whitens toward the edges |
+| Hair Dual Angel Ring | Hair | A broad ring and a thin ring wave along the strands |
 | Anime Shading | All | Japanese anime style. Shadow colors are derived from the base color, borders are crisp, and outlines keep a constant screen width. For skin, a positive Shadow Hue Shift gives reddish shadows |
 
 - Hair shadows require `GalaxyHairShadowFeature` in URP (add it with **Tools > GalaxyToon > 髪の影を有効にする** (Enable Hair Shadow)).

@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 namespace GalaxyToon.Editor
 {
     /// <summary>機能ごとに球を1つずつ並べたサンプルシーンを作る。マテリアル・テクスチャも Samples フォルダに作る(作り直すと上書き)。
-    /// 動く機能(涙・糸・転送・髪の揺れ・毛・雨)は再生すると動く。</summary>
+    /// 動く機能(涙・糸・転送・髪の揺れ・毛・雨・触れるとへこむ・脚に押される布)は再生すると動く。</summary>
     public static class GalaxyToonSampleSceneCreator
     {
         private const string ShaderName = "GalaxyShader/Toon";
@@ -32,12 +32,12 @@ namespace GalaxyToon.Editor
         private static Vector2 front;
         private static readonly Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
-        [MenuItem("Tools/GalaxyToon/サンプルシーンを作る (機能ごとの球)")]
+        [MenuItem("Tools/GalaxyToon/サンプルシーンを作る (機能ごとの球)", false, 1)]
         public static void CreateMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             string scene = Create();
-            Debug.Log($"[GalaxyToon] サンプルシーンを作りました: {scene}\n再生すると、涙・糸・転送・髪の揺れ・毛・雨が動きます。");
+            Debug.Log($"[GalaxyToon] サンプルシーンを作りました: {scene}\n再生すると、涙・糸・転送・髪の揺れ・毛・雨・触れるとへこむ・脚に押される布が動きます。");
         }
 
         /// <summary>シーンを作って保存し、パスを返す。</summary>
@@ -64,7 +64,9 @@ namespace GalaxyToon.Editor
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var rows = Rows();
             var viewer = BuildEnvironment(rows.Count).gameObject.AddComponent<GalaxyToonSampleViewer>();
+            viewer.volume = BuildVolume();
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var previewChoices = new List<(Material, string)>();
             for (int r = 0; r < rows.Count; r++)
             {
                 var (title, list) = rows[r];
@@ -82,8 +84,11 @@ namespace GalaxyToon.Editor
                     else AddSphere(go, m);
                     Label(go.transform, s.Jp + "\n" + s.En, new Vector3(0f, -0.6f, 0f), font, 0.035f, TextAnchor.UpperCenter, Color.white);
                     viewer.entries.Add(new GalaxyToonSampleViewer.Entry { target = go.transform, title = s.Jp + " / " + s.En });
+                    if (s.Build == null && !NotForPreview.Contains(s.En)) previewChoices.Add((m, s.Jp + " / " + s.En));
                 }
             }
+            BuildPreview(viewer, shader, previewChoices, rows.Count);
+            viewer.sun = GameObject.Find("Directional Light").GetComponent<Light>(); // BuildEnvironment で作った太陽
             AssetDatabase.SaveAssets();
             string path = samples + "/GalaxyToon_FeatureSamples.unity";
             EditorSceneManager.SaveScene(scene, path);
@@ -92,17 +97,27 @@ namespace GalaxyToon.Editor
 
         // ---------------------------------------------------------------- 並べる機能
 
+        // サルに着せても正しく見えない見本: 球の UV に合わせた瞳・頬の位置、顔の向き(GalaxyToonFace)・毛先の高さが要る物。
+        // 部品で動く物(糸・涙・雨・転送など、Build のある見本)は、もともとサルには着せない
+        private static readonly HashSet<string> NotForPreview = new HashSet<string>
+        {
+            "Eyes Crisp", "Eyes Teary", "Eyes Sparkle", "Eyelid Shadow / Caustic", "Blush", "Face SDF Shadow", "Flat Face Shading", "Hair Tip Gradient",
+        };
+
+        /// <summary>球の顔に瞳を描く(瞳のテクスチャと、カメラ側の UV に合わせた瞳の範囲)。</summary>
+        private static void Eyes(Material m)
+        {
+            m.SetTexture("_BaseMap", Tex("Eye"));
+            for (int e = 0; e < 2; e++)
+            {
+                float cx = front.x + (e == 0 ? -EyeX : EyeX), cy = front.y + EyeY;
+                m.SetVector(e == 0 ? "_EyeRect1" : "_EyeRect2", new Vector4(cx - EyeW, cy - EyeH, cx + EyeW, cy + EyeH));
+            }
+        }
+
         private static List<(string, List<Sample>)> Rows()
         {
-            var eyes = new Action<Material>(m =>
-            {
-                m.SetTexture("_BaseMap", Tex("Eye"));
-                for (int e = 0; e < 2; e++)
-                {
-                    float cx = front.x + (e == 0 ? -EyeX : EyeX), cy = front.y + EyeY;
-                    m.SetVector(e == 0 ? "_EyeRect1" : "_EyeRect2", new Vector4(cx - EyeW, cy - EyeH, cx + EyeW, cy + EyeH));
-                }
-            });
+            var eyes = new Action<Material>(Eyes);
             Color skin = new Color(1f, 0.88f, 0.8f);
             Color liquidBg = new Color(0.18f, 0.32f, 0.68f); // 液体の見本は白い液が見えるように濃い青の地にする
 
@@ -121,8 +136,8 @@ namespace GalaxyToon.Editor
                 }),
                 ("影・ライト\nShadow / Light", new List<Sample>
                 {
-                    S("影 2段", "2-Step Shadow", m => { C(m, "_Shadow2ndColor", new Color(0.55f, 0.5f, 0.7f, 1f)); F(m, "_Shadow2ndBorder", 0.3f); F(m, "_Shadow2ndBlur", 0.05f); }),
-                    S("影 3段", "3-Step Shadow", m => { C(m, "_Shadow2ndColor", new Color(0.6f, 0.55f, 0.75f, 1f)); F(m, "_Shadow2ndBorder", 0.35f); C(m, "_Shadow3rdColor", new Color(0.35f, 0.3f, 0.5f, 1f)); F(m, "_Shadow3rdBorder", 0.15f); }),
+                    S("影 2段", "2-Step Shadow", m => { C(m, "_Shade2Tint", new Color(0.55f, 0.5f, 0.7f, 1f)); F(m, "_Shade2Edge", 0.3f); F(m, "_Shade2Soft", 0.05f); }),
+                    S("影 3段", "3-Step Shadow", m => { C(m, "_Shade2Tint", new Color(0.6f, 0.55f, 0.75f, 1f)); F(m, "_Shade2Edge", 0.35f); C(m, "_Shade3Tint", new Color(0.35f, 0.3f, 0.5f, 1f)); F(m, "_Shade3Edge", 0.15f); }),
                     S("影のランプ", "Shadow Ramp", m => { m.SetTexture("_ShadowRampTex", Ramp("Shadow")); F(m, "_ShadowRampRows", 4f); F(m, "_ShadowRampRow", 1f); }),
                     S("ハイライトのランプ", "Specular Ramp", m => { C(m, "_SpecularColor", new Color(1f, 1f, 1f, 0.8f)); F(m, "_SpecularSize", 0.15f); m.SetTexture("_SpecularRampTex", Ramp("Specular")); F(m, "_ShadowRampRows", 4f); }),
                     S("アニメ塗り", "Anime Shading", m => { C(m, "_BaseColor", skin); P(m, "アニメ塗り"); F(m, "_OutlineWidth", 0.08f); }),
@@ -132,18 +147,18 @@ namespace GalaxyToon.Editor
                 }),
                 ("ハイライト・輪郭\nHighlight / Outline", new List<Sample>
                 {
-                    S("ハイライト", "Specular", m => { C(m, "_SpecularColor", new Color(1f, 1f, 1f, 0.8f)); F(m, "_SpecularSize", 0.08f); F(m, "_SpecularBlur", 0.02f); }),
+                    S("ハイライト", "Specular", m => { C(m, "_SpecularColor", new Color(1f, 1f, 1f, 0.8f)); F(m, "_SpecularSize", 0.08f); F(m, "_SpecularSoft", 0.02f); }),
                     S("マットキャップ", "MatCap", m => { m.SetTexture("_MatCapTex", Tex("MatCap")); C(m, "_MatCapColor", Color.white); }),
                     S("マットキャップ2", "MatCap 2", m => { m.SetTexture("_MatCap2Tex", Tex("MatCap")); C(m, "_MatCap2Color", new Color(0.4f, 0.8f, 1f, 1f)); }),
                     S("異方性 (天使の輪)", "Anisotropic", m => { C(m, "_BaseColor", new Color(0.35f, 0.25f, 0.2f)); C(m, "_AnisoColor", new Color(1f, 0.95f, 0.85f, 0.8f)); }),
-                    S("逆光", "Backlight", m => C(m, "_BacklightColor", new Color(1f, 0.6f, 0.4f, 1f))),
-                    S("リムライト", "Rim Light", m => { C(m, "_RimColor", new Color(0.6f, 0.9f, 1f, 1f)); F(m, "_RimBorder", 0.5f); }),
+                    S("逆光", "Backlight", m => C(m, "_BackLightTint", new Color(1f, 0.6f, 0.4f, 1f))),
+                    S("リムライト", "Rim Light", m => { C(m, "_RimColor", new Color(0.6f, 0.9f, 1f, 1f)); F(m, "_RimEdge", 0.5f); }),
                     S("深度リム", "Depth Rim", m => { C(m, "_RimColor", Color.white); F(m, "_DepthRim", 1f); }),
                     S("輪郭線", "Outline", m => { F(m, "_OutlineWidth", 0.3f); C(m, "_OutlineColor", new Color(0.15f, 0.1f, 0.2f, 1f)); }),
                 }),
                 ("発光・レイヤー\nEmission / Layers", new List<Sample>
                 {
-                    S("発光 (明滅)", "Emission (Blink)", m => { C(m, "_EmissionColor", new Color(0.2f, 1.2f, 2f, 1f)); F(m, "_EmissionBlink", 1f); }),
+                    S("発光 (明滅)", "Emission (Blink)", m => { C(m, "_EmissionColor", new Color(0.2f, 1.2f, 2f, 1f)); F(m, "_EmissionFlicker", 1f); }),
                     S("発光 (流れる)", "Emission (Scroll)", m => { m.SetTexture("_EmissionMap", Tex("Stripes")); C(m, "_EmissionColor", new Color(2f, 0.6f, 0.2f, 1f)); F(m, "_EmissionAnimate", 1f); V(m, "_EmissionScroll", new Vector4(0f, 0.3f, 0f, 0f)); }),
                     S("発光レイヤー2", "Emission Layer 2", m => { m.SetTexture("_Emission2Map", Tex("Stars")); C(m, "_Emission2Color", new Color(2f, 2f, 0.6f, 1f)); F(m, "_Emission2Animate", 1f); V(m, "_Emission2Scroll", new Vector4(0.05f, 0f, 0f, 0f)); }),
                     S("レイヤー1 (流れる)", "Layer 1 (Scroll)", m => { m.SetTexture("_Layer1Tex", Tex("Stripes")); C(m, "_Layer1Color", new Color(0.3f, 0.5f, 1f, 1f)); F(m, "_Layer1Animate", 1f); V(m, "_Layer1Scroll", new Vector4(0.1f, 0f, 0f, 0f)); }),
@@ -196,6 +211,48 @@ namespace GalaxyToon.Editor
                     S("左 Toon / 右 Lit", "Toon vs URP Lit", m => { C(m, "_BaseColor", skin); P(m, "肌"); }, BuildLitCompare),
                     S("白い液 どろどろ", "GalaxyTears (viscous)", m => C(m, "_BaseColor", liquidBg), BuildWhiteDrip),
                 }),
+                ("質感 2\nSurface 2", new List<Sample>
+                {
+                    S("SSS (血色・透け)", "SSS", m => { C(m, "_BaseColor", skin); P(m, "肌"); F(m, "_UseSss", 1f); C(m, "_SssColor", new Color(1f, 0.3f, 0.25f, 1f)); F(m, "_SssFrontScatter", 0.6f); Shadowy(m); }),
+                    S("ストッキング", "Sheer Stockings", m => { C(m, "_BaseColor", new Color(0.12f, 0.1f, 0.12f)); F(m, "_UseSheer", 1f); F(m, "_SheerAmount", 0.75f); }),
+                    S("網タイツの食い込み", "Fishnet Dent", m => { m.SetTexture("_BaseMap", Tex("Net")); F(m, "_UseNetDent", 1f); F(m, "_NetDentStrength", 1.2f); }),
+                    S("クリアコート", "Clear Coat", m => { C(m, "_BaseColor", new Color(0.75f, 0.1f, 0.15f)); F(m, "_Smoothness", 0.3f); F(m, "_ClearCoat", 1f); }),
+                    S("ベルベット", "Velvet", m => { C(m, "_BaseColor", new Color(0.35f, 0.1f, 0.4f)); C(m, "_VelvetColor", new Color(1f, 0.8f, 1f, 0.9f)); }),
+                    S("虹色の薄膜", "Iridescence", m => { C(m, "_BaseColor", new Color(0.8f, 0.8f, 0.85f)); F(m, "_IridescenceStrength", 1.2f); }),
+                    S("星空", "Starry", m => { C(m, "_BaseColor", new Color(0.05f, 0.05f, 0.12f)); F(m, "_StarryStrength", 2f); }),
+                    S("毛先のグラデーション", "Hair Tip Gradient", m => { C(m, "_BaseColor", new Color(0.35f, 0.25f, 0.45f)); C(m, "_TipColor", new Color(1f, 0.8f, 0.95f, 1f)); F(m, "_TipAxis", 2f); F(m, "_TipStart", 0.1f); F(m, "_TipEnd", -0.5f); }),
+                }),
+                ("影 2\nShadow 2", new List<Sample>
+                {
+                    S("影色テクスチャ", "Shade Map", m => { m.SetTexture("_ShadeMap", Tex("Shade")); Shadowy(m); }),
+                    S("影の出やすさマスク", "Shadow Bias Mask", m => { m.SetTexture("_ShadowBiasMask", Tex("Stripes")); F(m, "_ShadowBiasStrength", 1f); Shadowy(m); }),
+                    S("影の模様", "Shadow Pattern", m => { F(m, "_ShadowPattern", 1f); Shadowy(m); }),
+                    S("ハッチング", "Hatching", m => { F(m, "_MangaStyle", 1f); Shadowy(m); }),
+                    S("網点", "Halftone", m => { F(m, "_MangaStyle", 2f); Shadowy(m); }),
+                    S("カメラからの補助光", "Fill Light", m => { C(m, "_FillLightColor", new Color(1f, 0.9f, 0.85f, 0.8f)); Shadowy(m); }),
+                    S("接地影", "Contact Shadow", m => { F(m, "_ContactShadow", 1f); F(m, "_ContactShadowStrength", 1f); F(m, "_ContactShadowLength", 10f); }, BuildContactShadow),
+                    S("スカートの影", "Skirt Shadow", m => { C(m, "_BaseColor", skin); F(m, "_SkirtShadowReceive", 1f); }, BuildSkirtShadow),
+                }),
+                ("瞳・髪・リム 2\nEyes / Hair / Rim 2", new List<Sample>
+                {
+                    S("まぶたの影・光の溜まり", "Eyelid Shadow / Caustic", m => { eyes(m); P(m, "瞳 くっきり"); C(m, "_EyeLidShadowColor", new Color(0.25f, 0.15f, 0.3f, 0.9f)); F(m, "_EyeLidShadowWidth", 0.5f); C(m, "_EyeCausticColor", new Color(1f, 0.9f, 0.7f, 0.9f)); }),
+                    S("天使の輪 2本", "Dual Angel Ring", m => { C(m, "_BaseColor", new Color(0.35f, 0.25f, 0.2f)); C(m, "_AnisoColor", new Color(1f, 0.95f, 0.85f, 0.8f)); C(m, "_Aniso2Color", new Color(1f, 1f, 1f, 0.8f)); F(m, "_AnisoJitterStrength", 0.15f); }),
+                    S("天使の輪 (マットキャップ)", "Angel Ring (MatCap)", m => { C(m, "_BaseColor", new Color(0.35f, 0.25f, 0.2f)); C(m, "_AnisoColor", new Color(1f, 0.95f, 0.9f, 0.9f)); F(m, "_RingMode", 1f); m.SetTexture("_RingTex", Tex("Ring")); }),
+                    S("リムを光の側へ", "Rim Toward Light", m => { C(m, "_RimColor", new Color(1f, 0.9f, 0.6f, 1f)); F(m, "_RimLightAlign", 1f); Shadowy(m); }),
+                    S("影側の環境リム", "Opposite Rim", m => { C(m, "_RimOppositeColor", new Color(0.45f, 0.65f, 1f, 1f)); Shadowy(m); }),
+                    S("リムシェード", "Rim Shade", m => { C(m, "_RimDarkTint", new Color(0.4f, 0.3f, 0.5f, 1f)); Shadowy(m); }),
+                    S("色トレスの輪郭線", "Color Trace Outline", m => { C(m, "_BaseColor", new Color(1f, 0.6f, 0.3f)); F(m, "_OutlineWidth", 0.3f); F(m, "_OutlineColorTrace", 1f); }),
+                    S("輪郭線のゆらぎ", "Outline Boil", m => { F(m, "_OutlineWidth", 0.3f); F(m, "_OutlineBoil", 1f); }),
+                }),
+                ("形・発光 2\nShape / Emission 2", new List<Sample>
+                {
+                    S("ふくらむ", "Inflate", m => { F(m, "_Inflate", 1f); F(m, "_InflateAmount", 0.06f); }, BuildInflate),
+                    S("触れるとへこむ", "Soft Touch", m => { C(m, "_BaseColor", skin); F(m, "_SoftTouch", 1f); F(m, "_SoftDepth", 0.08f); }, BuildSoftTouch),
+                    S("脚に押される布", "Leg Push", m => { C(m, "_BaseColor", new Color(0.3f, 0.35f, 0.6f)); F(m, "_LegPush", 1f); }, BuildLegPush),
+                    S("全体のディザ透明度", "Dither Alpha", m => F(m, "_DitherAlpha", 0.35f)),
+                    S("見る角度の発光", "Emission by View Angle", m => { C(m, "_BaseColor", new Color(0.2f, 0.15f, 0.3f)); C(m, "_EmissionColor", new Color(0.35f, 0.1f, 0.7f, 1f)); C(m, "_EmissionViewColor", new Color(0.3f, 1f, 1f, 1f)); }),
+                    S("発光の色の移り変わり", "Emission Hue Cycle", m => { C(m, "_BaseColor", new Color(0.2f, 0.2f, 0.25f)); C(m, "_EmissionColor", new Color(0.8f, 0.15f, 0.15f, 1f)); F(m, "_EmissionHueSpeed", 0.2f); }),
+                }),
             };
         }
 
@@ -215,8 +272,8 @@ namespace GalaxyToon.Editor
             P(liquid, "涙・しずく");
             F(liquid, "_RenderMode", 0f); // 濁った白なので不透明
             C(liquid, "_BaseColor", new Color(0.97f, 0.97f, 0.94f, 1f));
-            C(liquid, "_ShadowColor", new Color(0.9f, 0.9f, 0.94f, 1f)); // 濁った液は光を通すので、影でも白いまま
-            F(liquid, "_LightMinLimit", 0.9f);
+            C(liquid, "_Shade1Tint", new Color(0.9f, 0.9f, 0.94f, 1f)); // 濁った液は光を通すので、影でも白いまま
+            F(liquid, "_LightFloor", 0.9f);
             F(liquid, "_OutlineWidth", 0f); // 不透明にすると輪郭線が付き、細い筋が黒く見える
             GalaxyToonGUI.Apply(liquid);
             var drip = AddTears(go, m, liquid, new Vector3(-0.1f, 0.3f, -0.38f), new Vector3(0.14f, 0.25f, -0.4f));
@@ -253,6 +310,21 @@ namespace GalaxyToon.Editor
             C(hair, "_BaseColor", new Color(0.35f, 0.25f, 0.2f));
             P(hair, "髪の影を落とす");
             GalaxyToonGUI.Apply(hair);
+            // 前髪の毛束: 頭の上から額へ垂れる細長い束(先を少し内へ向ける)。この形が顔に影を落とす
+            for (int i = 0; i < 7; i++)
+            {
+                var lockGo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                UnityEngine.Object.DestroyImmediate(lockGo.GetComponent<Collider>());
+                lockGo.name = "Bang Lock";
+                lockGo.transform.SetParent(go.transform, false);
+                float x = (i - 3) * 0.1f, length = i % 2 == 0 ? 0.38f : 0.3f; // 長い束と短い束を交互に
+                float bottom = 0.34f - length, mid = (0.34f + bottom) * 0.5f;
+                float z = -Mathf.Sqrt(Mathf.Max(0.25f - x * x - mid * mid, 0.01f)) - 0.03f; // 額の丸みに沿って、少し浮かせる
+                lockGo.transform.localPosition = new Vector3(x, mid, z);
+                lockGo.transform.localRotation = Quaternion.Euler(-10f, 0f, -x * 35f); // 毛先を少し内へ
+                lockGo.transform.localScale = new Vector3(0.13f, length * 0.5f, 0.07f);
+                lockGo.GetComponent<Renderer>().sharedMaterial = hair;
+            }
             var toonFace = go.AddComponent<GalaxyToonFace>();
             toonFace.head = go.transform;
             toonFace.faceRenderers.Add(faceRenderer);
@@ -353,7 +425,130 @@ namespace GalaxyToon.Editor
             other.localScale = Vector3.one * 0.55f;
         }
 
+        /// <summary>影の見本用: 影の境界を上げて、球の半分くらいを影にする(影の塗り方の違いが見えるように)。</summary>
+        private static void Shadowy(Material m) { F(m, "_Shade1Edge", 0.8f); F(m, "_Shade1Soft", 0.04f); }
+
+        private static void BuildContactShadow(GameObject go, Material m)
+        {
+            // 球のすぐ前に小さい球を浮かせる。接点のまわりに細い影(カメラの深度テクスチャが要る)
+            AddSphere(go, m);
+            var ball = AddSphere(new GameObject("Ball"), NewMaterial(m.shader, "Contact_Ball", 3)).transform.parent;
+            ball.SetParent(go.transform, false);
+            ball.localPosition = new Vector3(-0.12f, -0.1f, -0.6f); // 光(右上の手前から)の反対側、球の左下に細い影が出る
+            ball.localScale = Vector3.one * 0.2f;
+        }
+
+        private static void BuildSkirtShadow(GameObject go, Material m)
+        {
+            // 「スカート」の範囲(腰〜裾)と裾の下の帯が影になる。値はグローバルなので、受ける側のマテリアルだけに効く
+            AddSphere(go, m);
+            var skirt = new GameObject("Skirt").AddComponent<GalaxyToonSampleContact>();
+            skirt.transform.SetParent(go.transform, false);
+            skirt.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            skirt.kind = GalaxyToonSampleContact.Kind.SkirtShadow;
+            skirt.radius = 0.6f; skirt.halfLength = 0.2f;
+        }
+
+        private static void BuildInflate(GameObject go, Material m)
+        {
+            // 球の右だけをふくらませる(輪郭に出る所。中心はワールド座標なので、置いた位置から決める)
+            AddSphere(go, m);
+            Vector3 c = go.transform.position + new Vector3(0.42f, 0.12f, -0.1f);
+            V(m, "_InflateCenter", new Vector4(c.x, c.y, c.z, 0.3f));
+        }
+
+        private static void BuildSoftTouch(GameObject go, Material m)
+        {
+            // 小さい球が前から近づいて、肌を押してへこませる(MaterialPropertyBlock で触れるものを渡す見本)
+            var skin = AddSphere(go, m);
+            var finger = AddSphere(new GameObject("Finger"), NewMaterial(m.shader, "Soft_Finger", 6)).transform.parent;
+            finger.SetParent(go.transform, false);
+            finger.localPosition = new Vector3(0.1f, 0.1f, -0.47f);
+            finger.localScale = Vector3.one * 0.24f;
+            var motion = finger.gameObject.AddComponent<GalaxyToonSampleMotion>();
+            motion.offset = new Vector3(0f, 0f, -0.35f); motion.period = 3f;
+            var contact = finger.gameObject.AddComponent<GalaxyToonSampleContact>();
+            contact.kind = GalaxyToonSampleContact.Kind.SoftTouch;
+            contact.target = skin; contact.radius = 0.12f; contact.halfLength = 0f;
+        }
+
+        private static void BuildLegPush(GameObject go, Material m)
+        {
+            // 球の中を縦のカプセル(脚)が左右に動き、前の面を内側から押し出す。値はグローバルなので「脚に押される布」がオンのマテリアルだけに効く
+            AddSphere(go, m);
+            var leg = new GameObject("Leg").AddComponent<GalaxyToonSampleContact>();
+            leg.transform.SetParent(go.transform, false);
+            leg.transform.localPosition = new Vector3(-0.3f, 0f, -0.38f);
+            leg.kind = GalaxyToonSampleContact.Kind.LegPush;
+            leg.radius = 0.2f; leg.halfLength = 0.3f;
+            var motion = leg.gameObject.AddComponent<GalaxyToonSampleMotion>();
+            motion.offset = new Vector3(0.6f, 0f, 0f); motion.period = 4f;
+        }
+
         // ---------------------------------------------------------------- シーン・部品
+
+        /// <summary>
+        /// 見本の左に、素材を着せ替えて大きく見るプレビューのモデル(サルの頭)を置く。ビューアのボタンで、どの見本の素材にも替えられる。
+        /// </summary>
+        private static void BuildPreview(GalaxyToonSampleViewer viewer, Shader shader, List<(Material, string)> choices, int rowCount)
+        {
+            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(root + "/Samples/Models/Monkey.obj");
+            if (mesh == null) { Debug.LogWarning("[GalaxyToon] プレビューのモデルがありません: " + root + "/Samples/Models/Monkey.obj"); return; }
+            // はじめの素材は「押せる肌」: 横の小さい球で押すとへこむ
+            Material look = NewMaterial(shader, "Preview_Monkey", 0);
+            C(look, "_BaseColor", new Color(0.95f, 0.7f, 0.55f));
+            P(look, "肌");
+            F(look, "_SoftTouch", 1f);
+            F(look, "_SoftDepth", 0.25f);  // サルは大きいので、はっきり分かるくらい深く・広く
+            F(look, "_SoftSpread", 3f);
+            F(look, "_SoftBulge", 0.9f);
+            F(look, "_SoftShadow", 0.9f);
+            C(look, "_SoftBlush", new Color(1f, 0.45f, 0.45f, 0.9f));
+            GalaxyToonGUI.Apply(look);
+            // 「糸」: 球を押し当ててから離すと、押した所から糸を引く(へこまない)
+            Material stringsLook = NewMaterial(shader, "Preview_Strings", 0);
+            C(stringsLook, "_BaseColor", new Color(0.95f, 0.7f, 0.55f));
+            P(stringsLook, "肌");
+            GalaxyToonGUI.Apply(stringsLook);
+
+            float height = (rowCount - 1) * StepY;
+            var go = new GameObject("Preview (Monkey)", typeof(MeshFilter), typeof(MeshRenderer));
+            go.transform.position = new Vector3(-StepX * 4f, -height * 0.5f, 0f);
+            go.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // 顔をカメラ(-Z)へ
+            go.transform.localScale = Vector3.one * 1.4f;
+            go.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = look;
+            go.AddComponent<MeshCollider>().sharedMesh = mesh; // マウスで球を押し当てる所を探す
+
+            // マウスでつかんで動かす小さい球: 「押せる肌」ではサルに押し当てるとへこみ、「糸」では押し当ててから離すと糸を引く
+            var finger = AddSphere(new GameObject("Finger (drag me)"), NewMaterial(shader, "Preview_Finger", 6)).transform.parent;
+            finger.position = go.transform.position + new Vector3(1.9f, -0.5f, -1.2f);
+            finger.localScale = Vector3.one * 0.4f;
+            var contact = finger.gameObject.AddComponent<GalaxyToonSampleContact>();
+            contact.kind = GalaxyToonSampleContact.Kind.SoftTouch;
+            contact.target = r; contact.radius = 0.2f; contact.halfLength = 0f;
+            var anchor = new GameObject("String Anchor").transform; // 押した所(サルと一緒に回る)
+            anchor.SetParent(go.transform, false);
+            var strings = new GameObject("Finger Strings", typeof(MeshFilter), typeof(MeshRenderer));
+            strings.GetComponent<MeshRenderer>().sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(root + "/Materials/GalaxyToon_StickyString.mat");
+            var sticky = strings.AddComponent<GalaxyStickyStrings>();
+            sticky.anchorA = finger; sticky.anchorB = anchor;
+            sticky.spread = 0.1f; sticky.radius = 0.006f; sticky.wobble = 0.008f; sticky.breakLength = 0.9f; sticky.reformDistance = 0.2f; sticky.retractTime = 0.5f;
+            sticky.enabled = false; sticky.enabled = true; // 糸ごとの切れる長さは有効化のときに決まる
+            strings.SetActive(false); // はじめて押し当てたときに出す
+            viewer.finger = finger;
+            viewer.fingerAnchor = anchor;
+            viewer.fingerStrings = strings;
+            viewer.stringsMaterial = stringsLook;
+
+            viewer.entries.Insert(0, new GalaxyToonSampleViewer.Entry { target = go.transform, title = "プレビュー / Preview", size = 2f });
+            choices.Insert(0, (look, "押せる肌 (球で押す) / Pressable Skin (press with the ball)"));
+            choices.Insert(1, (stringsLook, "糸 (球で引く) / Sticky Strings (pull with the ball)"));
+            viewer.preview = r;
+            viewer.previewMaterials = choices.ConvertAll(c => c.Item1).ToArray();
+            viewer.previewNames = choices.ConvertAll(c => c.Item2).ToArray();
+        }
 
         private static Camera BuildEnvironment(int rowCount)
         {
@@ -372,9 +567,30 @@ namespace GalaxyToon.Editor
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.04f, 0.04f, 0.06f);
             cam.gameObject.AddComponent<AudioListener>();
+            cam.gameObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>().requiresDepthTexture = true; // 深度リム・接地影の見本用
             RenderSettings.ambientMode = AmbientMode.Flat;
             RenderSettings.ambientLight = new Color(0.35f, 0.36f, 0.42f);
             return cam;
+        }
+
+        /// <summary>シーン全体に効く Volume(Galaxy Toon)。プロファイルは Samples に保存する。ビューアのボタンでプリセットを切り替える。</summary>
+        private static Volume BuildVolume()
+        {
+            string path = Path.GetDirectoryName(matDir).Replace('\\', '/') + "/GalaxyToon_SampleVolume.asset";
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+            if (profile == null) { profile = ScriptableObject.CreateInstance<VolumeProfile>(); AssetDatabase.CreateAsset(profile, path); }
+            if (!profile.TryGet(out GalaxyToonVolume settings))
+            {
+                settings = profile.Add<GalaxyToonVolume>(true);
+                settings.name = nameof(GalaxyToonVolume);
+                AssetDatabase.AddObjectToAsset(settings, profile);
+            }
+            EditorUtility.SetDirty(profile);
+            var volume = new GameObject("Galaxy Toon Volume").AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = profile;
+            volume.enabled = false; // はじめは「オフ」。ビューアのボタンで入れる
+            return volume;
         }
 
         private static Renderer AddSphere(GameObject parent, Material m)
@@ -427,6 +643,7 @@ namespace GalaxyToon.Editor
         {
             var m = new Material(shader);
             C(m, "_BaseColor", Palette[colorIndex % Palette.Length]);
+            F(m, "_LightCeiling", 3f); // 明るさの上限を上げておく(ビューアの明るさのスライダーで、明るくもできるように。既定の 1 だと頭打ち)
             return Save(m, name);
         }
 
@@ -479,6 +696,17 @@ namespace GalaxyToon.Editor
                 return new Color(v, v, v, 1f);
             });
             Paint("Bumps", n, (x, y) => { float v = Mathf.Clamp01(1f - Vector2.Distance(new Vector2(x % 32, y % 32), new Vector2(16f, 16f)) / 16f); return new Color(v, v, v, 1f); });
+            // 網タイツ: 肌色の地に、斜めの暗い網の線
+            Paint("Net", n, (x, y) => (x + y) % 16 < 2 || (x - y + n) % 16 < 2 ? new Color(0.08f, 0.06f, 0.08f) : new Color(1f, 0.85f, 0.78f));
+            // 影色テクスチャ: 上は紫・下は青緑(手で塗った影の色の代わり)
+            Paint("Shade", n, (x, y) => Color.Lerp(new Color(0.3f, 0.6f, 0.65f), new Color(0.55f, 0.35f, 0.7f), y / (n - 1f)));
+            // 天使の輪のマットキャップ: 球の上の方に横長の明るい帯
+            Paint("Ring", n, (x, y) =>
+            {
+                var p = new Vector2(x / (n - 1f) * 2f - 1f, y / (n - 1f) * 2f - 1f);
+                float v = p.sqrMagnitude < 1f ? Mathf.Clamp01(1f - Mathf.Abs(p.y - 0.35f) / 0.15f) * Mathf.Clamp01(1f - Mathf.Abs(p.x) * 0.7f) : 0f;
+                return new Color(v, v, v, 1f);
+            });
             textures["Normal"] = AssetDatabase.LoadAssetAtPath<Texture2D>(GalaxyToonNormal.Bake(Tex("Bumps"), texDir + "/Sample_Normal.png", 4f, 1, 0, false, n));
             // 瞳: 肌色の地に、瞳の範囲(_EyeRect と同じ四角)に内接する青い瞳
             Paint("Eye", 512, (x, y) =>

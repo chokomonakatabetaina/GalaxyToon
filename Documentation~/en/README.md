@@ -20,10 +20,17 @@ Setting names are written as they appear when the Inspector language is set to *
 | [Highlight, Rim, Emission](shader-highlight.md) | Highlight, MatCap / Anisotropic Highlight / Backlight / Rim Light / Glitter, Refraction / Emission / Layers 1–3 |
 | [Wet, Sweat, Liquid, Dirt](shader-surface-fx.md) | Wet / Sweat / Liquid / Foam / Rain / Dirt, Scratches |
 | [Outline, Dissolve, Near Fade](shader-outline-dissolve.md) | Outline / Dissolve / Fade When Camera Is Close |
+| [Skin and Cloth](shader-skin-cloth.md) | SSS / Stockings / Fishnet Dent / Clear Coat, Velvet |
+| [Toon Plus](shader-toon-plus.md) | Light, shadow, rim, perspective, vertex colors, contact shadow, starry sky, nose line, packed mask, audio |
+| [Shape Changes and Script Inputs](shader-shape.md) | Inflate / Leg Push / Soft Touch / Skirt Shadow / Back Light / Flatten |
 
 ## Shader `GalaxyShader/ToonFur`
 
 - [Fur](shader-fur.md)
+
+## Screen Effects, Audio, Volume
+
+- [Screen Effects, Audio, Volume](rendering.md) — Galaxy Screen Line / Glow / Paint / Character Shadow / Toon Volume / Audio React
 
 ## Editor Tools
 

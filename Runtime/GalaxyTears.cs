@@ -251,6 +251,13 @@ namespace GalaxyToon
             Transform root = face.transform.root;
             var result = new List<int>();
             Mesh src = baked;   // Bake() 済み。元メッシュは Read/Write OFF だと読めない
+            var whites = new List<int>();
+            Material[] mats = face.sharedMaterials;
+            for (int sm = 0; sm < src.subMeshCount && sm < mats.Length; sm++)
+            {
+                string n = mats[sm] != null ? mats[sm].name : "";
+                if (sm != skinSubMesh && (n.IndexOf("EyeWhite", System.StringComparison.OrdinalIgnoreCase) >= 0 || n.IndexOf("Sclera", System.StringComparison.OrdinalIgnoreCase) >= 0)) whites.Add(sm);
+            }
             foreach (Transform eye in eyes)
             {
                 // 目の本当の位置: 目のボーンと同じ側・同じ高さ(±3cm)にある肌以外の頂点(白目など)の範囲。ボーンは眼球の奥・内寄りにあるため
@@ -259,6 +266,8 @@ namespace GalaxyToon
                 for (int sm = 0; sm < src.subMeshCount; sm++)
                 {
                     if (sm == skinSubMesh) continue;
+                    // 白目のサブメッシュがあれば、それだけで目の範囲を決める(アイライン・まつ毛は目より外へ長く伸びていて、目じりが耳の近くになるため)
+                    if (whites.Count > 0 && !whites.Contains(sm)) continue;
                     foreach (int i in src.GetTriangles(sm))
                         if (Vector3.Dot(worldPos[i] - root.position, side) > 0f && Mathf.Abs(Vector3.Dot(worldPos[i] - eye.position, root.up)) < 0.03f) { min = Vector3.Min(min, worldPos[i]); max = Vector3.Max(max, worldPos[i]); }
                 }

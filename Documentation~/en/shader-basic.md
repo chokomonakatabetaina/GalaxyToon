@@ -28,6 +28,8 @@ Section **Basic (Color / Normal)**: base color and surface bumps.
 | Detail Normal Strength | How strongly the detail normal map applies (0–2) |
 | Occlusion (AO Map) | Darkness of crevices and overlaps. Darker areas fall into shadow more easily |
 | Occlusion Strength | How strongly the AO map applies |
+| Crevice AO | Uses the camera depth texture to darken the inside of crevices and overlaps. Follows the pose and camera (needs **Depth Texture** in the URP Asset) |
+| Crevice Strength / Radius | Effect strength and search radius (cm) |
 
 > If you have no normal map, create one from the main texture with **Tools > GalaxyToon > ノーマルマップを作る** (Create Normal Map).
 
@@ -77,6 +79,7 @@ Which light illuminates the material and the brightness range.
 | Ambient Strength | How much scene ambient light (Skybox / Ambient) is added |
 | Additional Light Strength | How much point and spot lights are added. At 0, additional lights are not computed |
 | Baked Light Steps | How many bands lightmap light is split into. 0 = smooth |
+| Fill Light Color | Slightly brightens only the camera-facing part of the shadow side (keeps the light/shadow shape). A is the strength |
 
 - Cast shadows are always read from the scene main light's shadow map, regardless of the Main Light setting.
 - Additional lights are cut into lit / unlit at the Shadow 1 border, which gives a toon-like look.
@@ -95,8 +98,26 @@ Splits lighting into up to three shadow steps.
 | Shadow 2 Color / Border / Blur | Second shadow step. Turns on when the color alpha is above 0 |
 | Shadow 3 Color / Border / Blur | Third shadow step. Turns on when the color alpha is above 0 |
 | Shadow Strength Mask | Darker R gives weaker shadows. Paint areas that should not get shadows |
+| Shade Color Map | A hand-painted shadow color image. When set, the color inside the shadow comes from this image instead of base x shadow color (a hue-shifted shade, not just a darker base) |
+| Shadow Bias Mask | R shifts the shadow border. Gray (0.5) = unchanged, whiter = less shadow, blacker = more shadow. Use it to shape shadows by hand (cheeks, under the nose) |
+| Shadow Bias Mask Strength | How much the mask shifts the border |
 | Receive Shadows from Other Objects | How much shadow cast by other objects (or itself) is received |
+| Skirt Shadow Receive | Shades the inside of a skirt and the legs just below the hem. The skirt shape comes from a script ([Shape Changes and Script Inputs](shader-shape.md#skirt-shadow)) |
+| Shadow Terminator Fade | Keeps low-poly facets from showing up as bands in the cast shadow. 0 = off |
 | Border Anti-aliasing | Reduces jaggies on shadow borders |
+
+### Shadow Pattern / Manga Shadow
+
+| <img src="../Images/75_Shadow_Pattern.png" width="240" alt="Shadow Pattern"> | <img src="../Images/76_Hatching.png" width="240" alt="Hatching"> | <img src="../Images/77_Halftone.png" width="240" alt="Halftone"> |
+|---|---|---|
+| Shadow Pattern | Hatching | Halftone |
+
+| Property | Description |
+|---|---|
+| Shadow Pattern Strength / Color / Density / Width | Diagonal lines stuck to the model inside shadows. Darker shadow = thicker lines; they follow the body as it moves |
+| Manga Style | Fill (as before), Hatching (diagonal lines; cross lines in darker areas), or Halftone (bigger dots where darker). Drawn in screen space |
+| Manga Spacing / Angle | Spacing on screen (px) and angle (degrees) |
+| Manga Width | Hatching line width as a fraction of the spacing |
 
 ### Ramp
 

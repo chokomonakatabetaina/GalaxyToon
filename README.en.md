@@ -2,7 +2,17 @@
 
 [日本語](README.md) | English
 
-A toon shader for URP. Besides stepped shadows, rim light, MatCap, and outlines, a single shader covers eyes, blush, hair shadows, wet / sweat / liquid / rain, glitter and refraction, dissolve and teleport effects, and more.
+**From an anime face to rain-soaked hair and skin that dents under a touch. One shader.**
+
+A toon shader for URP. Besides stepped shadows, rim light, MatCap, and outlines, a single shader covers eyes, blush, hair shadows, wet / sweat / liquid / rain, glitter and refraction, dissolve and teleport effects, soft-touch skin, and more.
+
+### What makes GalaxyToon different
+
+- **One shader for a whole character**: face (SDF shadow that follows the head, nose line), eyes (parallax, teary, sparkle), hair (two angel rings, hair shadow on the face, tip color), skin (blush at the terminator, backlight translucency) and clothes (latex, stockings, metal) without switching shaders.
+- **Unused features cost nothing**: every feature is a keyword, so unused ones are compiled out. A profiling tool measures each feature one by one.
+- **Migrate as-is**: MToon (VRM), lilToon, UTS and URP Lit characters are converted together with face, eyes, outline and hair-shadow setup.
+- **Effects that run in the game**: wet, sweat, rain, tears, sticky strings, teleport and GPU soft-touch skin (up to 32 contacts) are driven from scripts.
+- **Japanese Inspector with presets**: pick a body part (skin, face, hair, clothes, metal) to load fitting values; switch to English at any time.
 
 Author: @matechagame
 
@@ -74,7 +84,7 @@ Menu items and the tool windows are shown in Japanese. In this document they are
 
 ### Migrating from Other Shaders (MToon, lilToon, etc.)
 
-For VRM (VRoid) and other characters, select the character in the Hierarchy, open `Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` (Migrate to GalaxyToon), and press **Migrate** to switch everything to GalaxyToon at once. This window follows the Inspector language (Japanese / English).
+For VRM and other characters, select the character in the Hierarchy, open `Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` (Migrate to GalaxyToon), and press **Migrate** to switch everything to GalaxyToon at once. This window follows the Inspector language (Japanese / English).
 
 - Supported: MToon (VRM 0.x / 1.0), lilToon, UTS, URP Lit / Unlit, Standard
 - The body part (skin, face, hair, clothes, face parts, etc.) is guessed from the material name, a preset is applied, and the original colors, shade colors, and outlines are copied.
@@ -87,9 +97,43 @@ See [Editor Tools in the documentation](Documentation~/en/editor-tools.md#migrat
 
 To cast bangs shadows on the face, run `Tools > GalaxyToon > 髪の影を有効にする` (Enable Hair Shadow) to add **Galaxy Hair Shadow Feature** to the URP Renderer you use (adding it manually with Add Renderer Feature works the same), and add **Galaxy Toon Face** to the character root. Use the preset **Cast Hair Shadow** on hair materials and **Receive Hair Shadow** on face / eye materials.
 
+### Fishnet Dent
+
+Turn on **Fishnet Dent** on a skin material and the net drawn in the base texture (dark lines, or alpha) presses into the skin while the cells bulge (shown with both normals and color, so it also reads in anime shading). You can change the dent width and depth, the shadow along the strands, and the cell bulge, and limit the area with `_NetDentMask`.
+
 ### Character Light (optional)
 
 Place **Galaxy Toon Light** and light traveling along that object's forward direction becomes a dedicated light for characters. Without it, the scene's main light is used.
+
+### Toon Plus (all off by default)
+
+The "Toon Plus" section of the Inspector groups these; only the ones you turn on take effect: light color normalize and soft upper limit, shadow side tinted by the sky, receive-shadow offset, additional light tuning, rim shade and soft depth rim, MatCap perspective/roll correction with a mask, depth-only Z offset and perspective removal, global dither alpha, day/night ramp, hair highlight shape and specular anti-flicker, emission hue cycling and view color, iridescence, vertex color meanings (R shadow, G border, B outline depth, A outline width), outline wider on the lit side and fading with distance, contact shadows, starry layer, nose line in profile (paint its mask to match the face texture), shadow-only normals from UV7, and a packed mask with per-material-ID colors.
+
+### Soft Touch
+
+Turn on "Soft Touch" and pass contact capsules through a MaterialPropertyBlock (`_SoftContactA`, `_SoftContactB`, `_SoftContactCount`, up to 32) to dent the skin in the vertex stage of every pass. The surroundings sink smoothly and bulge slightly outside; the mask's R/G/B are softness, flesh thickness and flatness. Pressed skin blushes and approaching contacts cast a soft shadow.
+
+### Audio reactive
+
+**Galaxy Audio React** measures the playing audio in low, mid and high bands and writes the global `_GalaxyAudio`. Pick a band per material in Toon Plus and raise the audio amounts for emission, rim and outline width.
+
+### Angel ring modes
+
+Besides the anisotropic ring, the angel ring can come from a MatCap (`_RingTex`, decided by the view direction) or from a band along UV2 that shifts with the view height.
+
+### Screen effects (renderer features)
+
+Add these from "Add Renderer Feature" on your Universal Renderer Data.
+
+- **Galaxy Screen Line**: silhouette and inner lines (fingers, overlaps, part borders) from depth and normal differences. Lines sit outside the silhouette, so characters do not get thinner. Works together with the extruded outline.
+- **Galaxy Glow**: a soft diffusion glow for bright areas, tuned separately from Bloom.
+- **Galaxy Character Shadow**: a high-resolution shadow map fitted tightly around the characters, for crisp self-shadows from bangs, fingers, collars and the chin; it also gives the character-only light a shadow.
+- **Galaxy Toon Volume Feature**: applies the "Galaxy Toon" Volume override (rim, shadow darken and tint, saturation, brightness, outline width) to every character, so scenes and times of day can switch the look with Volumes.
+- **Galaxy Paint**: Kuwahara smoothing plus brightness steps that keep the hue. Meant for backgrounds.
+
+### Motion Vectors
+
+A MotionVectors pass is included for TAA, STP and motion blur.
 
 ## Components
 
@@ -107,7 +151,10 @@ Add them from `Add Component > GalaxyToon`.
 | Galaxy Tongue Drip | Drips liquid from the tongue tip |
 | Galaxy Sticky Strings | Stretchy strings between two points that snap and reconnect |
 | Galaxy Teleport | Vanish / appear / outfit swap with a teleport or warp effect |
+| Galaxy Audio React | Measures the audio in low / mid / high bands and drives emission, rim, and outline width |
 | Galaxy Hair Shadow Feature | URP Renderer Feature for hair shadows |
+| Galaxy Character Shadow / Screen Line / Glow / Paint / Toon Volume Feature | URP Renderer Features for screen effects (see [Screen Effects, Audio, Volume](Documentation~/en/rendering.md)) |
+| Galaxy Toon Sample Contact | For the samples. Shows how to feed Soft Touch, Leg Push, and Skirt Shadow |
 
 ## Menu
 
@@ -115,15 +162,19 @@ Found under `Tools > GalaxyToon`.
 
 | Menu | Description |
 |---|---|
-| GalaxyToon に移行 (Migrate to GalaxyToon) | Converts materials from other shaders (MToon, lilToon, UTS, Lit, etc.) to GalaxyToon. For VRM (VRoid) characters, also sets up the face, eyes, outline, and hair shadow |
+| GalaxyToon に移行 (Migrate to GalaxyToon) | Converts materials from other shaders (MToon, lilToon, UTS, Lit, etc.) to GalaxyToon. For VRM characters, also sets up the face, eyes, outline, and hair shadow |
 | サンプルシーンを作る (Create Sample Scene) | Rebuilds the sample scene in `Samples/` |
 | 髪の影を有効にする (Enable Hair Shadow) | Adds Galaxy Hair Shadow Feature to the URP Renderers in use |
+| Volume を有効にする (Enable Volume) | Adds Galaxy Toon Volume Feature to the URP Renderers in use |
 | 瞳の範囲を探す / 頬の位置を探す (Find Iris Area / Find Cheek Positions) | Finds the iris / cheek UVs of the selected character and sets them on the material |
 | 前髪を透過する (See-Through Bangs) | Adds Galaxy Toon See-Through Bangs to the selected character |
 | 輪郭線用のなめらか法線を焼く (Bake Smooth Outline Normals) | Bakes smoothed normals so outlines don't break at hard edges |
 | SDF 影マップを作る (Create SDF Shadow Map) | Creates SDF shadow maps for the face, hair, or body |
 | ノーマルマップを作る (Create Normal Map) | Creates a normal map from a texture |
 | ランプのひな形を作る (Create Ramp Templates) | Creates shadow / highlight ramps (4 rows, one per body part) |
+| ランプを編集・作成する (Ramp Editor) | Edits shadow / highlight ramps as gradients while showing them on the material |
+| 厚みマップを作る (Create Thickness Map) | Builds the SSS (skin translucency) thickness mask from the mesh shape |
+| 開発用 > 全パラメータ・ライト反映フルテスト実行 / 全項目の総当たりテスト (Developer > Full Test / Property Sweep) | Checks automatically that every feature and property affects the image (for shader modifications) |
 | 全マテリアルの機能を整理 (Clean Up All Materials) | Removes keywords of features that have no effect |
 | 使っている機能の一覧 (Feature Usage Report) | Prints feature combinations and counts of all materials to the Console |
 | 負荷を測る (Measure Performance) | Turns features off one at a time in the playing scene and measures GPU / CPU time |
@@ -131,9 +182,9 @@ Found under `Tools > GalaxyToon`.
 
 ## Sample Scene
 
-Open `Samples/GalaxyToon_FeatureSamples.unity` and press Play. Use **◀ 前へ / Prev** and **次へ / Next ▶** at the bottom of the screen (or the ← → keys) to zoom in on each sample. **全体 / All** (Home key) returns to the overview.
+Open `Samples/GalaxyToon_FeatureSamples.unity` and press Play. Use **◀ 前へ / Prev** and **次へ / Next ▶** at the bottom of the screen (or the ← → keys) to zoom in on each sample, or click a sample sphere to zoom in on it. Double-click a sample to put its material on the preview model and zoom in on the model. It starts on the large preview model at the left (the Blender monkey); ◀ ▶ next to "Material" at the bottom put any sample material on it, dragging with the mouse rotates it, and the mouse wheel zooms in. You can grab and move the small ball next to it. With the "Pressable Skin" material (the first one), pressing the ball into the model dents the skin. With "Sticky Strings", touching the model and pulling the ball away stretches strings from where it touched. The buttons on the right switch Volume (Galaxy Toon) presets (Off, Default, Sunset, Night, Pastel, Crisp) and the light (Day, Sunset, Night, Backlight, Top, Side); the slider below them sets the light brightness, and the color squares set the background color. For Volume, run `Tools > GalaxyToon > Volume を有効にする` (Enable Volume) first. **全体 / All** (Home key) returns to the overview.
 
-Tears, strings, teleport, hair sway, fur, and rain move in Play mode. The "Hair Shadow" sphere shows its shadow after you run `Tools > GalaxyToon > 髪の影を有効にする` (Enable Hair Shadow). You can rebuild the scene at any time with `Tools > GalaxyToon > サンプルシーンを作る` (Create Sample Scene). When installed through the Package Manager, the package itself is read-only, so the scene is created in `Assets/GalaxyToon Samples/` instead.
+Tears, strings, teleport, hair sway, fur, rain, soft touch, and leg push move in Play mode. Version 1.0.2 adds four rows (30 samples) for the new features. The "Contact Shadow" sample needs the camera depth texture. The "Hair Shadow" sphere shows its shadow after you run `Tools > GalaxyToon > 髪の影を有効にする` (Enable Hair Shadow). You can rebuild the scene at any time with `Tools > GalaxyToon > サンプルシーンを作る` (Create Sample Scene). When installed through the Package Manager, the package itself is read-only, so the scene is created in `Assets/GalaxyToon Samples/` instead.
 
 ## Features
 
@@ -203,6 +254,38 @@ Each image is a close-up of one sphere in the sample scene.
 | <img src="Documentation~/Images/61_Near_Fade.png" width="240" alt="Near Fade"> | <img src="Documentation~/Images/62_Stencil.png" width="240" alt="Stencil"> | <img src="Documentation~/Images/63_Toon_vs_URP_Lit.png" width="240" alt="Toon vs URP Lit"> | <img src="Documentation~/Images/64_GalaxyTears_viscous.png" width="240" alt="GalaxyTears (viscous)"> |
 | **Near Fade** | **Stencil** | **Toon vs URP Lit** | **GalaxyTears (viscous)** |
 
+### Surface 2
+
+| <img src="Documentation~/Images/65_SSS.png" width="240" alt="SSS"> | <img src="Documentation~/Images/66_Sheer_Stockings.png" width="240" alt="Sheer Stockings"> | <img src="Documentation~/Images/67_Fishnet_Dent.png" width="240" alt="Fishnet Dent"> | <img src="Documentation~/Images/68_Clear_Coat.png" width="240" alt="Clear Coat"> |
+|---|---|---|---|
+| **SSS** | **Sheer Stockings** | **Fishnet Dent** | **Clear Coat** |
+| <img src="Documentation~/Images/69_Velvet.png" width="240" alt="Velvet"> | <img src="Documentation~/Images/70_Iridescence.png" width="240" alt="Iridescence"> | <img src="Documentation~/Images/71_Starry.png" width="240" alt="Starry"> | <img src="Documentation~/Images/72_Hair_Tip_Gradient.png" width="240" alt="Hair Tip Gradient"> |
+| **Velvet** | **Iridescence** | **Starry** | **Hair Tip Gradient** |
+
+### Shadow 2
+
+| <img src="Documentation~/Images/73_Shade_Map.png" width="240" alt="Shade Map"> | <img src="Documentation~/Images/74_Shadow_Bias_Mask.png" width="240" alt="Shadow Bias Mask"> | <img src="Documentation~/Images/75_Shadow_Pattern.png" width="240" alt="Shadow Pattern"> | <img src="Documentation~/Images/76_Hatching.png" width="240" alt="Hatching"> |
+|---|---|---|---|
+| **Shade Map** | **Shadow Bias Mask** | **Shadow Pattern** | **Hatching** |
+| <img src="Documentation~/Images/77_Halftone.png" width="240" alt="Halftone"> | <img src="Documentation~/Images/78_Fill_Light.png" width="240" alt="Fill Light"> | <img src="Documentation~/Images/79_Contact_Shadow.png" width="240" alt="Contact Shadow"> | <img src="Documentation~/Images/80_Skirt_Shadow.png" width="240" alt="Skirt Shadow"> |
+| **Halftone** | **Fill Light** | **Contact Shadow** | **Skirt Shadow** |
+
+### Eyes / Hair / Rim 2
+
+| <img src="Documentation~/Images/81_Eyelid_Shadow_Caustic.png" width="240" alt="Eyelid Shadow / Caustic"> | <img src="Documentation~/Images/82_Dual_Angel_Ring.png" width="240" alt="Dual Angel Ring"> | <img src="Documentation~/Images/83_Angel_Ring_MatCap.png" width="240" alt="Angel Ring (MatCap)"> | <img src="Documentation~/Images/84_Rim_Toward_Light.png" width="240" alt="Rim Toward Light"> |
+|---|---|---|---|
+| **Eyelid Shadow / Caustic** | **Dual Angel Ring** | **Angel Ring (MatCap)** | **Rim Toward Light** |
+| <img src="Documentation~/Images/85_Opposite_Rim.png" width="240" alt="Opposite Rim"> | <img src="Documentation~/Images/86_Rim_Shade.png" width="240" alt="Rim Shade"> | <img src="Documentation~/Images/87_Color_Trace_Outline.png" width="240" alt="Color Trace Outline"> | <img src="Documentation~/Images/88_Outline_Boil.png" width="240" alt="Outline Boil"> |
+| **Opposite Rim** | **Rim Shade** | **Color Trace Outline** | **Outline Boil** |
+
+### Shape / Emission 2
+
+| <img src="Documentation~/Images/89_Inflate.png" width="240" alt="Inflate"> | <img src="Documentation~/Images/90_Soft_Touch.png" width="240" alt="Soft Touch"> | <img src="Documentation~/Images/91_Leg_Push.png" width="240" alt="Leg Push"> | <img src="Documentation~/Images/92_Dither_Alpha.png" width="240" alt="Dither Alpha"> |
+|---|---|---|---|
+| **Inflate** | **Soft Touch** | **Leg Push** | **Dither Alpha** |
+| <img src="Documentation~/Images/93_Emission_by_View_Angle.png" width="240" alt="Emission by View Angle"> | <img src="Documentation~/Images/94_Emission_Hue_Cycle.png" width="240" alt="Emission Hue Cycle"> |   |   |
+| **Emission by View Angle** | **Emission Hue Cycle** |   |   |
+
 ## Documentation
 
 Explanations of every Inspector setting, preset, and tool are in the [English documentation](Documentation~/en/README.md).
@@ -216,9 +299,15 @@ Explanations of every Inspector setting, preset, and tool are in the [English do
 | [Highlight, Rim, Emission](Documentation~/en/shader-highlight.md) | Highlight, MatCap / Anisotropic / Backlight / Rim / Glitter, Refraction / Emission / Layers |
 | [Wet, Sweat, Liquid, Dirt](Documentation~/en/shader-surface-fx.md) | Wet / Sweat / Liquid / Foam / Rain / Dirt, Scratches |
 | [Outline, Dissolve, Near Fade](Documentation~/en/shader-outline-dissolve.md) | Outline / Dissolve / Fade When Camera Is Close |
+| [Skin and Cloth](Documentation~/en/shader-skin-cloth.md) | SSS / Stockings / Fishnet Dent / Clear Coat, Velvet |
+| [Toon Plus](Documentation~/en/shader-toon-plus.md) | Light, shadow, rim, perspective, vertex colors, contact shadow, starry sky, nose line, packed mask, audio |
+| [Shape Changes and Script Inputs](Documentation~/en/shader-shape.md) | Inflate / Leg Push / Soft Touch / Skirt Shadow / Back Light / Flatten |
+| [Screen Effects, Audio, Volume](Documentation~/en/rendering.md) | Screen Line / Glow / Paint / Character Shadow / Toon Volume / Audio React |
 | [Fur](Documentation~/en/shader-fur.md) | `GalaxyShader/ToonFur` |
 | [Editor Tools](Documentation~/en/editor-tools.md) | Every tool in the `Tools > GalaxyToon` menu |
 
 ## License
 
 [MIT License](LICENSE)
+
+The sample 3D model `Samples/Models/Monkey.obj` is "Suzanne", the monkey head built into Blender (Add > Mesh > Monkey), subdivided, UV-mapped, and exported to OBJ with Blender 5.2 (not a downloaded model). Blender itself is GPL, but works created with Blender, including its built-in primitives, are not covered by the GPL and belong to their creator ([Blender License](https://www.blender.org/about/license/)). The model is distributed under the same MIT License as the package.

@@ -18,8 +18,13 @@ namespace GalaxyToon
         public override void Create()
         {
             pass = new RequestPass { renderPassEvent = RenderPassEvent.BeforeRenderingOpaques };
+            // 止めた(非アクティブの)機能は値を入れ直さないので、毎フレームの始めに「使わない」に戻す
+            RenderPipelineManager.beginContextRendering -= ResetGlobals;
+            RenderPipelineManager.beginContextRendering += ResetGlobals;
             pass.ConfigureInput(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal);
         }
+
+        private static void ResetGlobals(ScriptableRenderContext context, System.Collections.Generic.List<Camera> cameras) => Shader.SetGlobalFloat("_GalaxyHairShadowOn", 0f);
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {

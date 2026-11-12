@@ -8,7 +8,7 @@ namespace GalaxyToon.Editor
     {
         private const string Menu = "Tools/GalaxyToon/前髪を透過する (選択中のキャラ)";
 
-        [MenuItem(Menu)]
+        [MenuItem(Menu, false, 23)]
         public static void Add()
         {
             int added = 0;

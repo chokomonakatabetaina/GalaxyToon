@@ -37,7 +37,7 @@ namespace GalaxyToon
         private static readonly int StartId = Shader.PropertyToID("_DissolveStart");
         private static readonly int InvertId = Shader.PropertyToID("_DissolveInvert");
         private static readonly int WorldId = Shader.PropertyToID("_DissolveWorld");
-        private static readonly int NoiseId = Shader.PropertyToID("_DissolveNoiseStrength");
+        private static readonly int NoiseId = Shader.PropertyToID("_DissolveNoiseAmount");
         private static readonly int EdgeWidthId = Shader.PropertyToID("_DissolveEdgeWidth");
         private static readonly int EdgeColorId = Shader.PropertyToID("_DissolveEdgeColor");
 

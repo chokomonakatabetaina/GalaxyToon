@@ -26,6 +26,12 @@ namespace GalaxyToon
 
         private static readonly int StrengthId = Shader.PropertyToID("_HairSway");
         private static readonly int OffsetId = Shader.PropertyToID("_HairSwayOffset");
+        private static readonly int OffsetPrevId = Shader.PropertyToID("_HairSwayOffsetPrev");
+        private static readonly int PivotPrevId = Shader.PropertyToID("_HairSwayPivotPrev");
+        // 前のフレームの値(動きのベクトルで、揺れそのものの動きも出す)
+        private Vector3 lastOffset;
+        private Vector4 lastPivot;
+        private bool hasLast;
         private static readonly int PivotId = Shader.PropertyToID("_HairSwayPivot");
         private static readonly int UpId = Shader.PropertyToID("_HairSwayUp");
 
@@ -72,15 +78,28 @@ namespace GalaxyToon
             if (idleSway > 0f) offset += transform.right * (Mathf.Sin(Time.time * 1.3f) * idleSway) + transform.forward * (Mathf.Sin(Time.time * 0.9f + 1f) * idleSway * 0.5f);
 
             Vector3 pivot = head.position + Up * pivotHeight;
+            var pivotNow = new Vector4(pivot.x, pivot.y, pivot.z, hairLength);
+            if (!hasLast)
+            {
+                lastOffset = offset;
+                lastPivot = pivotNow;
+                hasLast = true;
+            }
+
             foreach (Renderer r in targets)
             {
                 if (r == null) continue;
                 r.GetPropertyBlock(block);
                 block.SetVector(OffsetId, offset);
-                block.SetVector(PivotId, new Vector4(pivot.x, pivot.y, pivot.z, hairLength));
+                block.SetVector(PivotId, pivotNow);
                 block.SetVector(UpId, Up);
+                block.SetVector(OffsetPrevId, new Vector4(lastOffset.x, lastOffset.y, lastOffset.z, 1f));
+                block.SetVector(PivotPrevId, lastPivot);
                 r.SetPropertyBlock(block);
             }
+
+            lastOffset = offset;
+            lastPivot = pivotNow;
         }
     }
 }

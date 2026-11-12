@@ -24,7 +24,7 @@ half GalaxyBlink(half blink, half phase)
 half3 GalaxyEmission(float2 uv)
 {
     half3 e = SAMPLE_TEXTURE2D(_EmissionMap, sampler_linear_repeat, GalaxyLayerUV(uv, _EmissionMap_ST, _EmissionScroll, _EmissionAnimate)).rgb
-            * _EmissionColor.rgb * GalaxyBlink(_EmissionBlink, 0);
+            * _EmissionColor.rgb * GalaxyBlink(_EmissionFlicker, 0);
     #if defined(_EMISSION2)
         e += SAMPLE_TEXTURE2D(_Emission2Map, sampler_linear_repeat, GalaxyLayerUV(uv, _Emission2Map_ST, _Emission2Scroll, _Emission2Animate)).rgb
            * _Emission2Color.rgb * GalaxyBlink(_Emission2Blink, 0);

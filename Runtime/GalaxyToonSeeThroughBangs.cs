@@ -30,6 +30,12 @@ namespace GalaxyToon
         private static readonly int ForwardId = Shader.PropertyToID("_GalaxyBangForward");
         private static readonly int RangeId = Shader.PropertyToID("_GalaxyBangRange");
         private static readonly int RegionId = Shader.PropertyToID("_GalaxyBangRegion");
+        // キャラごとの MaterialPropertyBlock 用(シーンに複数キャラいても干渉しない)
+        private static readonly int LocalCenterId = Shader.PropertyToID("_BangCenter");
+        private static readonly int LocalUpId = Shader.PropertyToID("_BangUp");
+        private static readonly int LocalForwardId = Shader.PropertyToID("_BangForward");
+        private static readonly int LocalRangeId = Shader.PropertyToID("_BangRange");
+        private static readonly int LocalRegionId = Shader.PropertyToID("_BangRegion");
         private readonly List<(SkinnedMeshRenderer source, SkinnedMeshRenderer copy)> copies = new List<(SkinnedMeshRenderer, SkinnedMeshRenderer)>();
         private readonly List<Material> created = new List<Material>();
         private readonly List<Mesh> createdMeshes = new List<Mesh>();
@@ -232,17 +238,29 @@ namespace GalaxyToon
         {
             if (head == null) return;
             Vector3 up = head.rotation * upInHead, forward = head.rotation * forwardInHead;
-            Shader.SetGlobalVector(CenterId, new Vector4(head.position.x, head.position.y, head.position.z, copies.Count > 0 ? 1f : 0f));
-            Shader.SetGlobalVector(UpId, up);
-            Shader.SetGlobalVector(ForwardId, forward);
+            float activeFlag = copies.Count > 0 ? 1f : 0f;
+            var centerVec = new Vector4(head.position.x, head.position.y, head.position.z, activeFlag);
             float top = eyeHeight + hairlineAboveEyes, tip = eyeHeight + tipAboveEyes;
             float fadeStart = Mathf.Lerp(top, tip, opaquePortion); // 付け根から opaquePortion までは透けない
-            Shader.SetGlobalVector(RangeId, new Vector4(fadeStart, tip, halfWidth, eyeForward - 0.01f));
-            Shader.SetGlobalVector(RegionId, new Vector4(top, 0f, 0f, 0f));
+            var rangeVec = new Vector4(fadeStart, tip, halfWidth, eyeForward - 0.01f);
+            var regionVec = new Vector4(top, 0f, 0f, 0f);
+            // 後方互換のためグローバルにも入れつつ、各キャラの Renderer ごとに MaterialPropertyBlock で個別に渡す(複数キャラ対応)
+            Shader.SetGlobalVector(CenterId, centerVec);
+            Shader.SetGlobalVector(UpId, up);
+            Shader.SetGlobalVector(ForwardId, forward);
+            Shader.SetGlobalVector(RangeId, rangeVec);
+            Shader.SetGlobalVector(RegionId, regionVec);
             foreach (var (source, copy) in copies)
             {
-                // 髪の揺れ(Renderer ごとの上書き値)とブレンドシェイプを写す
+                if (source == null || copy == null) continue;
+                // 髪の揺れ(Renderer ごとの上書き値)と前髪透過の座標・ブレンドシェイプを写す
                 source.GetPropertyBlock(block);
+                block.SetVector(LocalCenterId, centerVec);
+                block.SetVector(LocalUpId, up);
+                block.SetVector(LocalForwardId, forward);
+                block.SetVector(LocalRangeId, rangeVec);
+                block.SetVector(LocalRegionId, regionVec);
+                source.SetPropertyBlock(block);
                 copy.SetPropertyBlock(block);
                 int n = copy.sharedMesh.blendShapeCount;
                 for (int i = 0; i < n; i++) copy.SetBlendShapeWeight(i, source.GetBlendShapeWeight(i));
@@ -252,7 +270,24 @@ namespace GalaxyToon
 
         private void OnDisable()
         {
-            if (Application.isPlaying) Shader.SetGlobalVector(CenterId, Vector4.zero); // 透けを止める
+            if (!Application.isPlaying) return;
+            Shader.SetGlobalVector(CenterId, Vector4.zero); // 透けを止める
+            if (block == null) return;
+            foreach (var (source, copy) in copies)
+            {
+                if (source != null)
+                {
+                    source.GetPropertyBlock(block);
+                    block.SetVector(LocalCenterId, Vector4.zero);
+                    source.SetPropertyBlock(block);
+                }
+                if (copy != null)
+                {
+                    copy.GetPropertyBlock(block);
+                    block.SetVector(LocalCenterId, Vector4.zero);
+                    copy.SetPropertyBlock(block);
+                }
+            }
         }
 
         private void OnDestroy()

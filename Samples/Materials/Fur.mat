@@ -40,15 +40,15 @@ Material:
     - _FurRootDark: 0.5
     - _FurShell: 0
     - _FurThickness: 0.9
-    - _LightMaxLimit: 1
-    - _LightMinLimit: 0.05
-    - _ShadowBlur: 0.15
-    - _ShadowBorder: 0.5
+    - _LightCeiling: 1
+    - _LightFloor: 0.05
+    - _Shade1Edge: 0.5
+    - _Shade1Soft: 0.15
     m_Colors:
     - _BaseColor: {r: 0.9, g: 0.75, b: 0.55, a: 1}
     - _FurForce: {r: 0, g: 0, b: 0, a: 0}
     - _FurTipColor: {r: 1, g: 0.97, b: 0.88, a: 0.6}
     - _RimColor: {r: 1, g: 1, b: 1, a: 0.3}
-    - _ShadowColor: {r: 0.82, g: 0.76, b: 0.85, a: 1}
+    - _Shade1Tint: {r: 0.82, g: 0.76, b: 0.85, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

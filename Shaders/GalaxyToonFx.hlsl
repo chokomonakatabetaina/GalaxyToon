@@ -16,7 +16,28 @@ struct GalaxyToonFxResult
     half dirt;        // 汚れ・すす(0〜1)
     half scratch;     // 傷(0〜1)
     half foamEdge;    // 泡の膜(縁・泡どうしの境目, 0〜1)
+    half dropHighlight; // 汗・雨のしずくの白い光の点(0〜1)
+    half dropRim;       // しずくの下の縁の暗い線(水が光を曲げて縁が暗く見える, 0〜1)
+    half dropCaustic;   // しずくの下側の中の明るい所(光が集まる, 0〜1)
 };
+
+// しずく 1 粒の形と見た目。q はしずくの中心からの位置(半径で割った値、上が +y)。
+// 少し縦長で、下は丸く、上がなめらかにすぼまる涙の形。x=高さ y=光の点 z=下の縁の暗い線 w=下側の明るい所
+float4 GalaxyDropShape(float2 q)
+{
+    q.y *= 0.8;                          // 全体を少し縦長に
+    float top = saturate(q.y);
+    q.x /= 1.0 - 0.35 * top * top;       // 上だけ、なめらかに少しすぼまる(とがらせない)
+    q.y *= q.y > 0.0 ? 0.85 : 1.0;       // 上は少しだけ長い
+    float dome = saturate(1.0 - dot(q, q));
+    float height = pow(dome, 0.3);      // 縁が切り立った、表面張力で盛り上がった粒
+    float2 h = q - float2(-0.32, 0.3);
+    float highlight = 1.0 - smoothstep(0.03, 0.09, dot(h, h));                 // 左上の白い点(くっきり)
+    float rim = (1.0 - smoothstep(0.0, 0.22, dome)) * step(0.001, dome) * saturate(-q.y * 1.6 + 0.2); // 下の縁
+    float2 c = q - float2(0.12, -0.5);
+    float caustic = (1.0 - smoothstep(0.02, 0.12, dot(c, c))) * step(0.001, dome); // 下側の中に光が集まる
+    return float4(height, highlight * step(0.001, dome), rim, caustic * 0.8);
+}
 
 float2 GalaxyHash22(float2 p)
 {
@@ -46,13 +67,14 @@ float GalaxyValueNoise3(float3 p)
 
 // 汗の粒: UV をセルに分け、セルごとにランダムな位置・大きさの丸い粒を置く(amount で粒の数が増える)。
 // flow > 0 なら、粒がゆっくり下(UV の -V)へ流れる。高さ(0〜1、ドーム形)を返す
-half GalaxySweatDroplets(float2 uv, half scale, half size, half amount, half flow)
+// 汗の粒: いちばん高い粒の形と見た目(GalaxyDropShape)を返す
+float4 GalaxySweatDroplets(float2 uv, half scale, half size, half amount, half flow)
 {
     float2 p = uv * scale;
     p.y += _Time.y * flow;
     float2 cell = floor(p);
     float2 f = frac(p);
-    half height = 0;
+    float4 best = 0;
     [unroll] for (int y = -1; y <= 1; y++)
     [unroll] for (int x = -1; x <= 1; x++)
     {
@@ -62,11 +84,10 @@ half GalaxySweatDroplets(float2 uv, half scale, half size, half amount, half flo
         if (rnd2.x > amount) continue;                       // 量が少ないと粒が出ないセルが増える
         float2 center = o + 0.15 + rnd * 0.7;
         float radius = size * (0.45 + 0.55 * rnd2.y);
-        float2 d = (f - center) * float2(1.0, 0.8);          // 少し縦長(垂れた形)
-        half dome = saturate(1.0 - dot(d, d) / (radius * radius));
-        height = max(height, sqrt(dome));
+        float4 drop = GalaxyDropShape((f - center) / radius);
+        if (drop.x > best.x) best = drop;
     }
-    return height;
+    return best;
 }
 
 // 高さ h で法線 n をずらす(Mikkelsen 2010)。scale は凹凸の強さ
@@ -154,7 +175,8 @@ float GalaxyRainRipples(float2 p, half amount, half speed)
 }
 
 /// 立った面を流れ落ちるしずく。縦の列ごとに1粒、ときどき止まりながら下へ。粒の後ろに細い濡れた跡。高さ(0〜1)を返す
-float GalaxyRainStreaks(float2 p, half amount, half speed)
+// 立った面を流れ落ちる雨: x=高さ。先頭のしずくは GalaxyDropShape の見た目(y=光の点 z=縁 w=明るい所)も返す
+float4 GalaxyRainStreaks(float2 p, half amount, half speed)
 {
     float col = floor(p.x);
     float2 rnd = GalaxyHash22(float2(col, 3.1)), rnd2 = GalaxyHash22(float2(col, 9.7));
@@ -163,12 +185,12 @@ float GalaxyRainStreaks(float2 p, half amount, half speed)
     float t = _Time.y * speed * (0.3 + 0.5 * rnd.y) + rnd2.y * 7.0;
     float y = frac(p.y * 0.25 + t + 0.15 * sin(t * 6.0 + col));             // 0=しずくの位置 1=列の上端。sin でつーっ、つーっ
     // 縦長の筋(丸い頭+細長い尾だとオタマジャクシに見える)。跡は線ではなく途切れた小粒
-    float drop = saturate(1.0 - (x * x / 0.005 + (y - 0.08) * (y - 0.08) / 0.016));
+    float4 drop = GalaxyDropShape(float2(x / 0.12, (y - 0.05) / 0.035)); // 先頭のしずく。y は x の 4 倍に伸びた座標なので、縦は 1/4 にして見た目を少し縦長に
     float seg = floor(y * 10.0);
     float beadOn = step(0.45, GalaxyHash22(float2(col, seg + 17.0)).x);
     float bead = saturate(1.0 - (x * x / 0.0025 + (frac(y * 10.0) - 0.5) * (frac(y * 10.0) - 0.5) / 0.03));
     float trail = sqrt(bead) * beadOn * saturate(1.0 - y * 2.5) * 0.5 * step(0.2, y);
-    return max(sqrt(drop), trail);
+    return drop.x >= trail ? drop : float4(trail, 0, 0, 0);
 }
 
 // ---- 傷: UV のマスごとに1本、向き・長さがランダムな細い線分。量が多いほど線のあるマスが増える
@@ -209,9 +231,14 @@ GalaxyToonFxResult GalaxyToonFx(float2 uv, float3 positionWS, float3 positionOS,
     // 外側の分岐はマテリアルの値(全ピクセル共通)で切る。ピクセルごとの値だけで切るとコンパイラが分岐をやめ、量 0 でも全部計算していた。
     // 内側でピクセルごとにも切る(マスクの外を飛ばす)
     r.sweat = 0;
+    float4 drops = 0; // しずくの見た目(汗と雨の先頭の粒のうち、高い方)
     UNITY_BRANCH if (_SweatAmount * _SweatReceive > 0.001h)
     {
-        if (sweatAmount > 0.001h) r.sweat = GalaxySweatDroplets(uv, _SweatScale, _SweatSize, sweatAmount, _SweatFlow);
+        if (sweatAmount > 0.001h)
+        {
+            drops = GalaxySweatDroplets(uv, _SweatScale, _SweatSize, sweatAmount, _SweatFlow);
+            r.sweat = (half)drops.x;
+        }
     }
     r.wet = saturate(max(wetAmount, sweatAmount * 0.4h)); // 汗ばむと肌全体もうっすら濡れてつやが出る
 
@@ -285,9 +312,10 @@ GalaxyToonFxResult GalaxyToonFx(float2 uv, float3 positionWS, float3 positionOS,
         {
             // 面に沿った横の座標: 法線を水平にした向きと直交する向き
             float2 across = normalize(float2(-normal.z, normal.x) + 1e-5);
-            float streak = GalaxyRainStreaks(float2(dot(positionWS.xz, across), positionWS.y) * _RainScale * 1.5, rainAmount * _RainFlowAmount, _RainSpeed);
-            rainHeight += streak * side;
-            r.rain = max(r.rain, streak * side);
+            float4 streak = GalaxyRainStreaks(float2(dot(positionWS.xz, across), positionWS.y) * _RainScale * 1.5, rainAmount * _RainFlowAmount, _RainSpeed);
+            rainHeight += streak.x * side;
+            r.rain = max(r.rain, streak.x * side);
+            if (streak.x * side > drops.x) drops = float4(streak.x * side, streak.yzw * side);
         }
         r.wet = saturate(max(r.wet, rainAmount * 0.35h * max(up, side))); // 雨そのものの濡れは控えめ(じわっと広がる濡れは _WetAmount 側)
     }
@@ -316,7 +344,10 @@ GalaxyToonFxResult GalaxyToonFx(float2 uv, float3 positionWS, float3 positionOS,
     UNITY_BRANCH if (scratchAmount > 0.001h) r.scratch = GalaxyScratches(uv * _ScratchScale, scratchAmount);
 
     // 粒・筋・泡・波紋の高さから法線をずらす(粘る液・泡は盛り上がる、傷はへこむ)
-    float height = r.sweat * 0.6 + liquid * (0.4 + 0.8 * _LiquidViscosity) + foamDome * 0.8 + rainHeight * 0.7 - r.scratch * 0.4;
+    float height = r.sweat * 1.0 + liquid * (0.4 + 0.8 * _LiquidViscosity) + foamDome * 0.8 + rainHeight * 1.0 - r.scratch * 0.4; // しずくは高めに(立体に見えるように)
+    r.dropHighlight = (half)drops.y;
+    r.dropRim = (half)drops.z;
+    r.dropCaustic = (half)drops.w;
     r.normal = normal;
     UNITY_BRANCH if (_SweatAmount * _SweatReceive + _LiquidAmount * _LiquidReceive + _FoamAmount * _FoamReceive + rainAmount + scratchAmount > 0.001h)
     {

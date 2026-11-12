@@ -22,6 +22,7 @@ namespace GalaxyToon.Editor
         private Axis forwardAxis = Axis.Auto;
         private float smoothness = 0.6f;      // 法線をなめらかにする強さ
         private float shapeBlend = 0.7f;      // 頭の楕円体へ寄せる強さ(顔・髪)
+        private float cheekHighlight = 0.45f; // 顔: 斜めから光が当たったとき、影側の頬に三角形の光(レンブラント光)を残す強さ
         private string savePath = "";
         private bool applyToMaterial = true;
         private Texture2D preview;
@@ -31,7 +32,7 @@ namespace GalaxyToon.Editor
         private static readonly string[] AxisNames = { "自動 (キャラのルートの正面)", "メッシュの +Z", "メッシュの -Z", "メッシュの +X", "メッシュの -X" };
         private static readonly int[] Resolutions = { 256, 512, 1024, 2048 };
 
-        [MenuItem("Tools/GalaxyToon/SDF 影マップを作る")]
+        [MenuItem("Tools/GalaxyToon/SDF 影マップを作る", false, 40)]
         public static void Open() => GetWindow<GalaxyToonSdfBaker>("SDF 影マップ");
 
         private void OnSelectionChange()
@@ -57,10 +58,12 @@ namespace GalaxyToon.Editor
             if (kind == Kind.Body)
                 EditorGUILayout.HelpBox("SDF は焼いたときの姿勢(T ポーズ)が前提です。腕・脚のように曲がる部位に使うと、影が肌に張り付いて関節でガタガタになります。胴体だけの固いメッシュ以外には使わないでください。", MessageType.Warning);
             resolution = EditorGUILayout.IntPopup(new GUIContent("解像度"), resolution, System.Array.ConvertAll(Resolutions, r => new GUIContent(r.ToString())), Resolutions);
-            forwardAxis = (Axis)EditorGUILayout.Popup(new GUIContent("キャラの正面", "顔が向いている向き。自動: キャラのいちばん上の親の正面(+Z)を使う。FBX の軸の違い(Blender の Z 上など)も自動で合わせる。"), (int)forwardAxis, AxisNames);
+            forwardAxis = (Axis)EditorGUILayout.Popup(new GUIContent("キャラの正面", "顔が向いている向き。自動: キャラのいちばん上の親の正面(+Z)を使う。FBX の軸の違い(作ったソフトの Z 上など)も自動で合わせる。"), (int)forwardAxis, AxisNames);
             smoothness = EditorGUILayout.Slider(new GUIContent("なめらかさ", "法線をなめらかにする強さ。上げるほど影の形が大きく単純になる。"), smoothness, 0f, 1f);
             using (new EditorGUI.DisabledScope(kind == Kind.Body))
                 shapeBlend = EditorGUILayout.Slider(new GUIContent("頭の形へ寄せる", "顔・髪で、頭を楕円体とみなした形へ寄せる強さ。1 で完全に楕円体の影。"), shapeBlend, 0f, 1f);
+            using (new EditorGUI.DisabledScope(kind != Kind.Face))
+                cheekHighlight = EditorGUILayout.Slider(new GUIContent("頬の三角ハイライト", "斜めから光が当たったとき、影側の頬の高い位置にアニメ特有の三角形の光(レンブラント光)を残す強さ。"), cheekHighlight, 0f, 1f);
 
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -115,7 +118,9 @@ namespace GalaxyToon.Editor
                 default: forward = Vector3.forward; right = Vector3.right; break;
             }
 
-            Color[] pixels = GalaxyToonSdf.Bake(mesh, materialIndex, resolution, forward, right, smoothness, kind == Kind.Body ? 0f : shapeBlend, kind == Kind.Hair);
+            Color[] pixels;
+            try { pixels = GalaxyToonSdf.Bake(mesh, materialIndex, resolution, forward, right, smoothness, kind == Kind.Body ? 0f : shapeBlend, kind == Kind.Hair, kind == Kind.Face ? cheekHighlight : 0f); }
+            catch (System.ArgumentException e) { message = e.Message; return; }
             var tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false, true);
             tex.SetPixels(pixels);
             tex.Apply();
@@ -152,16 +157,37 @@ namespace GalaxyToon.Editor
         }
     }
 
+    /// <summary>SDF・厚みマップの計算に使うメッシュの値を読む。焼けないメッシュは、分かる言葉の ArgumentException で止める。
+    /// 法線が無いメッシュは複製で計算する(元のメッシュ・読み取り専用の FBX を書き換えない)。</summary>
+    internal static class GalaxyToonMeshInput
+    {
+        public static void Read(Mesh mesh, int subMesh, out Vector3[] positions, out Vector3[] normals, out Vector2[] uvs, out int[] tris)
+        {
+            if (mesh == null) throw new System.ArgumentException("メッシュがありません。");
+            if (subMesh < 0 || subMesh >= mesh.subMeshCount) throw new System.ArgumentException($"サブメッシュ {subMesh} がありません(このメッシュは {mesh.subMeshCount} 個)。");
+            positions = mesh.vertices;
+            uvs = mesh.uv;
+            tris = mesh.GetTriangles(subMesh);
+            if (tris.Length == 0) throw new System.ArgumentException("このサブメッシュには三角形がありません。");
+            if (uvs.Length != positions.Length) throw new System.ArgumentException("メッシュに UV がありません。");
+            normals = mesh.normals;
+            if (normals == null || normals.Length != positions.Length)
+            {
+                Mesh copy = Object.Instantiate(mesh);
+                copy.RecalculateNormals();
+                normals = copy.normals;
+                Object.DestroyImmediate(copy);
+            }
+        }
+    }
+
     /// <summary>SDF 影マップの計算(エディタ外からも呼べるように分けてある)。</summary>
     public static class GalaxyToonSdf
     {
         /// <summary>R=光が右から、G=光が左から回ってきたとき影に入る角度(0〜1 = 0〜180°)。メッシュの無い所は周りの値で埋める。</summary>
-        public static Color[] Bake(Mesh mesh, int subMesh, int size, Vector3 forward, Vector3 right, float smoothness, float shapeBlend, bool sphereShape)
+        public static Color[] Bake(Mesh mesh, int subMesh, int size, Vector3 forward, Vector3 right, float smoothness, float shapeBlend, bool sphereShape, float cheekHighlight = 0f)
         {
-            Vector3[] positions = mesh.vertices;
-            Vector3[] normals = mesh.normals;
-            Vector2[] uvs = mesh.uv;
-            int[] tris = mesh.GetTriangles(subMesh);
+            GalaxyToonMeshInput.Read(mesh, subMesh, out Vector3[] positions, out Vector3[] normals, out Vector2[] uvs, out int[] tris);
 
             // ---- 使う頂点と、その範囲(キャラの 右・上・正面 の座標で。楕円体の中心と半径に使う)
             var used = new HashSet<int>(tris);
@@ -224,8 +250,35 @@ namespace GalaxyToon.Editor
                 // 法線の水平の向き φ(正面=0、右=+90°)。光が右から θ 回ったとき、|θ-φ|<90° の間は光が当たる
                 float nf = Vector3.Dot(n, forward), nr = Vector3.Dot(n, right);
                 float phi = Mathf.Atan2(nr, nf) * Mathf.Rad2Deg;
-                thresholdR[i] = Mathf.Clamp01((phi + 90f) / 180f);
-                thresholdL[i] = Mathf.Clamp01((-phi + 90f) / 180f);
+                float tr = Mathf.Clamp01((phi + 90f) / 180f);
+                float tl = Mathf.Clamp01((-phi + 90f) / 180f);
+                if (cheekHighlight > 0.001f && !sphereShape)
+                {
+                    // アニメ調のレンブラント光(頬の逆三角形ハイライト):
+                    // 顔の正面に近い左右の頬(X: ±0.25〜0.72, Y: -0.28〜+0.18)に、上が広く下が細い三角形のしきい値ブーストを加える。
+                    // これにより、光が反対側から斜め 45〜70° まで回っても反対側の頬に三角形の明るい島が残り、さらに横へ回るとすっと消える。
+                    Vector3 rel = Local(positions[i]) - bounds.center;
+                    float nx = rel.x / Mathf.Max(bounds.extents.x, 1e-4f);
+                    float ny = rel.y / Mathf.Max(bounds.extents.y, 1e-4f);
+                    float nz = rel.z / Mathf.Max(bounds.extents.z, 1e-4f);
+                    if (nz > -0.1f)
+                    {
+                        // 上が広く下が尖った逆三角形の窓(yNorm: 下端 0 → 上端 1)
+                        float yNorm = Mathf.Clamp01((ny - (-0.28f)) / (0.18f - (-0.28f)));
+                        float triHalfWidth = Mathf.Lerp(0.04f, 0.24f, yNorm);
+                        float vertWeight = Mathf.Sin(yNorm * Mathf.PI);
+                        float frontWeight = Mathf.Clamp01((nz + 0.1f) * 1.5f);
+                        // 左頬(nx < 0)は光が右から(R)のときに反対側の頬として残る / 右頬(nx > 0)は光が左から(G)のときに残る
+                        float distL = Mathf.Abs(nx - (-0.46f));
+                        float distR = Mathf.Abs(nx - 0.46f);
+                        float triL = Mathf.Clamp01(1f - distL / Mathf.Max(triHalfWidth, 1e-3f)) * vertWeight * frontWeight;
+                        float triR = Mathf.Clamp01(1f - distR / Mathf.Max(triHalfWidth, 1e-3f)) * vertWeight * frontWeight;
+                        tr = Mathf.Clamp01(tr + triL * cheekHighlight * 0.22f);
+                        tl = Mathf.Clamp01(tl + triR * cheekHighlight * 0.22f);
+                    }
+                }
+                thresholdR[i] = tr;
+                thresholdL[i] = tl;
             }
 
             // ---- UV 空間へ三角形を塗る

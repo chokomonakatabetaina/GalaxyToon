@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using static GalaxyToon.Editor.GalaxyToonText;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("GalaxyToon.Tests.Editor")] // テストから見出しの一覧を読む
+
 namespace GalaxyToon.Editor
 {
     /// <summary>GalaxyShader/Toon の Inspector。一番上に「描画モード」「描画する面」「プリセット」、その下を折りたためる見出しに分けて並べる(開閉は記録)。
@@ -23,33 +25,40 @@ namespace GalaxyToon.Editor
         private static string[] CullNames => new[] { L("両面", "Both"), L("裏だけ", "Back"), L("表だけ", "Front") }; // CullMode の値の順(Off=0, Front=1, Back=2)
 
         // 見出し → 中の項目(並び順)。どこにも入っていない項目は「その他」に出す
-        private static readonly (string title, string[] props)[] Sections =
+        internal static readonly (string title, string[] props)[] Sections =
         {
-            ("基本(色・立体感)", new[] { "_BaseMap", "_BaseColor", "_BumpMap", "_BumpScale", "_Bump2Map", "_Bump2Scale", "_OcclusionMap", "_OcclusionStrength" }),
+            ("基本(色・立体感)", new[] { "_BaseMap", "_BaseColor", "_BumpMap", "_BumpScale", "_Bump2Map", "_Bump2Scale", "_OcclusionMap", "_OcclusionStrength", "_CreviceAO", "_CreviceStrength", "_CreviceRadius" }),
             ("色調補正", new[] { "_HueShift", "_Saturation", "_Brightness", "_Gamma" }),
-            ("金属・つや・映り込み", new[] { "_Metallic", "_Smoothness", "_MetallicGlossMap", "_ReflectionStrength", "_ReflectionSteps" }),
-            ("ラメ・屈折 (宝石・ガラス)", new[] { "_GlitterColor", "_GlitterMask", "_GlitterScale", "_GlitterSize", "_GlitterDensity", "_GlitterSharpness", "_GlitterShadowMask", "_RefractionStrength", "_RefractionDispersion" }),
+            ("金属・つや・映り込み", new[] { "_Metallic", "_Smoothness", "_MetallicGlossMap", "_ReflectionStrength", "_ReflectionSteps", "_ClearCoat", "_ClearCoatSmoothness", "_VelvetColor", "_VelvetPower" }),
+            ("ラメ・屈折 (宝石・ガラス)", new[] { "_GlitterTint", "_GlitterMask", "_GlitterScale", "_GlitterSize", "_GlitterDensity", "_GlitterSharpness", "_GlitterShadeMask", "_RefractionStrength", "_RefractionDispersion" }),
             ("トライプラナー (UV なしで貼る)", new[] { "_UseTriplanar", "_TriplanarScale", "_TriplanarBlend" }),
-            ("ライト", new[] { "_LightSource", "_LightMinLimit", "_LightMaxLimit", "_MonochromeLighting", "_AmbientStrength", "_AdditionalLightStrength", "_BakedSteps" }),
-            ("影", new[] { "_ShadowColor", "_ShadowBorder", "_ShadowBlur", "_Shadow2ndColor", "_Shadow2ndBorder", "_Shadow2ndBlur", "_Shadow3rdColor", "_Shadow3rdBorder", "_Shadow3rdBlur", "_ShadowStrengthMask", "_ShadowRampTex", "_ShadowRampRows", "_ShadowRampRow", "_RampIdMap", "_ShadowReceive", "_AAStrength" }),
+            ("ライト", new[] { "_LightSource", "_LightFloor", "_LightCeiling", "_LightGray", "_AmbientStrength", "_AdditionalLightStrength", "_FillLightColor", "_BakedSteps" }),
+            ("影", new[] { "_Shade1Tint", "_Shade1Edge", "_Shade1Soft", "_Shade2Tint", "_Shade2Edge", "_Shade2Soft", "_Shade3Tint", "_Shade3Edge", "_Shade3Soft", "_ShadeAmountMap", "_ShadeMap", "_ShadowBiasMask", "_ShadowBiasStrength", "_ShadowRampTex", "_ShadowRampRows", "_ShadowRampRow", "_RampIdMap", "_CastShadowAmount", "_SkirtShadowReceive", "_ShadowTerminatorFade", "_EdgeSmooth", "_ShadowPattern", "_ShadowPatternColor", "_ShadowPatternDensity", "_ShadowPatternWidth", "_MangaStyle", "_MangaSpacing", "_MangaAngle", "_MangaWidth" }),
             ("アニメ塗り (日本のアニメ調)", new[] { "_AnimeMode", "_AnimeHardness", "_AnimeShadowHue", "_AnimeShadowSat", "_AnimeShadowValue", "_AnimeEdgeColor", "_AnimeEdgeWidth", "_AnimeFlatLight", "_AnimeFlatNormal", "_AnimeFlatTexture", "_AnimeFlatMip", "_AnimeNoGloss" }),
-            ("顔", new[] { "_FaceShading", "_FaceSphere", "_UseFaceSdf", "_FaceSdfTex" }),
-            ("瞳 (奥行き・ハイライト・うるうる・きらめき)", new[] { "_UseEye", "_EyeRect1", "_EyeRect2", "_EyeParallax", "_EyeHighlightColor", "_EyeHighlightPos", "_EyeHighlightSize", "_EyeWet", "_EyeSparkleColor", "_EyeSparkleScale", "_EyeSparkleSpeed" }),
+            ("SSS (肌・薄肉の血色と透け)", new[] { "_UseSss", "_SssColor", "_SssEdgeWidth", "_SssShadowBleed", "_SssTranslucency", "_SssDistortion", "_SssPower", "_SssFrontScatter", "_ThicknessMap" }),
+            ("顔", new[] { "_FaceShading", "_FaceSphere", "_UseFaceSdf", "_FaceSdfTex", "_FaceSdfPitch", "_FaceSdfIgnoreShadow" }),
+            ("瞳 (奥行き・ハイライト・うるうる・きらめき)", new[] { "_UseEye", "_EyeRect1", "_EyeRect2", "_EyeParallax", "_EyeHighlightColor", "_EyeHighlightPos", "_EyeHighlightSize", "_EyeWet", "_EyeSparkleColor", "_EyeSparkleScale", "_EyeSparkleSpeed", "_EyeIrisRadius", "_EyeLidShadowColor", "_EyeLidShadowWidth", "_EyeLidShadowSoft", "_EyeCausticColor", "_EyeCausticSize" }),
             ("頬染め (照れ)", new[] { "_BlushAmount", "_BlushColor", "_BlushUV", "_BlushSize", "_BlushSoft", "_BlushLines" }),
+            ("毛先のグラデーション", new[] { "_TipColor", "_TipAxis", "_TipStart", "_TipEnd" }),
             ("髪の揺れ", new[] { "_HairSway" }),
-            ("髪の影 (前髪の影を顔に落とす)", new[] { "_HairShadowCast", "_HairShadowReceive", "_HairShadowDistance", "_HairShadowBias" }),
-            ("ハイライト・マットキャップ", new[] { "_SpecularColor", "_SpecularSize", "_SpecularBlur", "_SpecularRampTex", "_MatCapTex", "_MatCapColor", "_MatCapShadowMask", "_MatCap2Tex", "_MatCap2Color", "_MatCap2Blend", "_MatCap2Mask", "_MatCap2ShadowMask" }),
-            ("異方性ハイライト (髪の天使の輪)", new[] { "_AnisoColor", "_AnisoDirection", "_AnisoShift", "_AnisoSharpness", "_AnisoBorder", "_AnisoBlur", "_AnisoShadowMask", "_AnisoUseRamp" }),
-            ("逆光ライト", new[] { "_BacklightColor", "_BacklightBorder", "_BacklightBlur", "_BacklightDirectivity", "_BacklightViewStrength", "_BacklightMainStrength" }),
-            ("リムライト", new[] { "_RimColor", "_RimBorder", "_RimBlur", "_RimFresnelPower", "_RimShadowMask", "_DepthRim", "_RimDepthWidth", "_RimDepthThreshold" }),
-            ("発光", new[] { "_EmissionMap", "_EmissionColor", "_EmissionAnimate", "_EmissionScroll", "_EmissionBlink", "_Emission2Map", "_Emission2Color", "_Emission2Animate", "_Emission2Scroll", "_Emission2Blink" }),
+            ("髪の影 (前髪の影を顔に落とす)", new[] { "_HairShadowCast", "_HairShadowReceive", "_HairShadowDistance", "_HairShadowBias", "_HairShadowSoftness" }),
+            ("ストッキング・薄布の透け (シアー素材)", new[] { "_UseSheer", "_SheerAmount", "_SheerSkinColor", "_SheerPower", "_SheerSheen", "_SheerMask" }),
+            ("網タイツの食い込み", new[] { "_UseNetDent", "_NetSource", "_NetThreshold", "_NetDentMask", "_NetDentWidth", "_NetDentStrength", "_NetDentShadow", "_NetDentColor", "_NetDentHighlight" }),
+            ("ハイライト・マットキャップ", new[] { "_SpecularColor", "_SpecularSize", "_SpecularSoft", "_SpecularMask", "_SpecularShadowMask", "_SpecularRampTex", "_MatCapTex", "_MatCapColor", "_MatCapShadeMask", "_MatCap2Tex", "_MatCap2Color", "_MatCap2Blend", "_MatCap2Mask", "_MatCap2ShadowMask" }),
+            ("異方性ハイライト (髪の天使の輪)", new[] { "_AnisoColor", "_AnisoDirection", "_AnisoShift", "_AnisoSharpness", "_AnisoBorder", "_AnisoBlur", "_AnisoShadowMask", "_AnisoJitterStrength", "_AnisoJitterScale", "_Aniso2Color", "_Aniso2Shift", "_Aniso2Sharpness", "_AnisoUseRamp", "_RingMode", "_RingTex", "_RingOffset", "_RingViewShift", "_HairMapOn", "_HairMap", "_HairMapNeutral", "_HairMapStrength" }),
+            ("逆光ライト", new[] { "_BackLightTint", "_BackLightEdge", "_BackLightSoft", "_BackLightFocus", "_BackLightViewMix", "_BackLightAlbedoMix" }),
+            ("リムライト", new[] { "_RimColor", "_RimEdge", "_RimSoft", "_RimFalloff", "_RimShadeFade", "_RimLightAlign", "_RimOppositeColor", "_DepthRim", "_RimDepthWidth", "_RimDepthThreshold" }),
+            ("発光", new[] { "_EmissionMap", "_EmissionColor", "_EmissionAnimate", "_EmissionScroll", "_EmissionFlicker", "_Emission2Map", "_Emission2Color", "_Emission2Animate", "_Emission2Scroll", "_Emission2Blink" }),
             ("レイヤー1", LayerProps(1)),
             ("レイヤー2", LayerProps(2)),
             ("レイヤー3", LayerProps(3)),
             ("濡れ・汗・液体・汚れ", new[] { "_UseFx", "_FxMask", "_WetAmount", "_WetReceive", "_WetDarken", "_WetGloss", "_WetSoak", "_WetShrink", "_HairWet", "_HairWetClumps", "_SweatAmount", "_SweatReceive", "_SweatScale", "_SweatSize", "_SweatFlow", "_LiquidAmount", "_LiquidReceive", "_LiquidColor", "_LiquidScale", "_LiquidFlow", "_LiquidGloss", "_LiquidViscosity", "_LiquidFlowDir", "_FoamAmount", "_FoamReceive", "_FoamColor", "_FoamScale", "_FoamSize", "_FoamFlow", "_FoamPop", "_FoamMerge", "_RainAmount", "_RainReceive", "_RainRipples", "_RainFlowAmount", "_RainSplash", "_RainScale", "_RainSpeed", "_DirtAmount", "_DirtReceive", "_DirtColor", "_DirtScale", "_ScratchAmount", "_ScratchColor", "_ScratchScale", "_FxBump" }),
-            ("輪郭線", new[] { "_OutlineWidth", "_OutlineColor", "_OutlineTexBlend", "_OutlineLit", "_OutlineFixWidth", "_AnimeOutlinePixel", "_OutlineWidthMask", "_OutlineSmoothNormal" }),
+            ("輪郭線", new[] { "_OutlineWidth", "_OutlineColor", "_OutlineTexBlend", "_OutlineColorTrace", "_OutlineZOffset", "_OutlineLit", "_OutlineNearClamp", "_AnimeOutlinePixel", "_OutlineCenterBoost", "_OutlineCenterRadius", "_OutlineFovKeep", "_OutlineBoil", "_OutlineBoilFps", "_OutlineThicknessMap", "_OutlineVertexColor", "_OutlineSmoothNormal" }),
+            ("トゥーンの強化 (光・影・リム・マットキャップ・遠近)", new[] { "_LightNormalize", "_LightSoftLimit", "_AmbientHeadSplit", "_ShadowAmbientTint", "_ReceiveShadowOffset", "_AddLightIgnoreNormal", "_AddLightBorder", "_AddLightMax", "_AddLightMono", "_RimDarkTint", "_RimShadePower", "_RimDarkEdge", "_RimDarkSoft", "_RimDepthSoft", "_MatCapViewFix", "_MatCapNoRoll", "_MatCapMask", "_IridescenceStrength", "_IridescenceScale", "_IridescenceShift", "_ZOffsetCm", "_ZOffsetMask", "_PerspectiveRemoval", "_DitherAlpha", "_RampDayNight", "_RampNightAmount", "_AnisoCenterShape", "_SpecularAA", "_TexLineKeep", "_EmissionHueSpeed", "_EmissionViewColor", "_VertexColorShadow", "_VertexColorBias", "_OutlineVertexDepth", "_OutlineVertexAlpha", "_OutlineLightWidth", "_OutlineFadeStart", "_OutlineFadeEnd", "_ContactShadow", "_ContactShadowStrength", "_ContactShadowLength", "_SelfShadowStrength", "_SelfShadowLength", "_SelfShadowThickness", "_StarryStrength", "_StarryMask", "_StarryColor", "_StarryNebula", "_StarryScale", "_StarryParallax", "_NoseLineMask", "_NoseLineColor", "_NoseLineSide", "_UseIlm", "_IlmTex", "_IlmShadowBias", "_IlmLut", "_AudioBand", "_AudioEmission", "_AudioRim", "_AudioOutline", "_VolumeReceive" }),
+            ("ふくらむ・脚に押される布", new[] { "_Inflate", "_InflateAmount", "_InflateMask", "_InflateCenter", "_InflateRound", "_LegPush" }),
+            ("触れるとへこむ", new[] { "_SoftTouch", "_Softness", "_SoftMask", "_SoftDepth", "_SoftSpread", "_SoftBulge", "_SoftBlush", "_SoftShadow" }),
             ("カメラが近いと透ける", new[] { "_UseNearFade", "_NearFadeStart", "_NearFadeEnd" }),
-            ("ディゾルブ (消える演出)", new[] { "_UseDissolve", "_DissolveAmount", "_DissolveMode", "_DissolveDirection", "_DissolveStart", "_DissolveNoise", "_DissolveNoiseScale", "_DissolveNoiseStrength", "_DissolveInvert", "_DissolveWorld", "_DissolveEdgeWidth", "_DissolveEdgeColor" }),
+            ("ディゾルブ (消える演出)", new[] { "_UseDissolve", "_DissolveAmount", "_DissolveMode", "_DissolveDirection", "_DissolveStart", "_DissolveNoise", "_DissolveNoiseScale", "_DissolveNoiseAmount", "_DissolveInvert", "_DissolveWorld", "_DissolveEdgeWidth", "_DissolveEdgeColor" }),
             ("ステンシル (瞳を髪に透かす など)", new[] { "_StencilRef", "_StencilComp", "_StencilPass", "_StencilFail", "_StencilZFail", "_StencilReadMask", "_StencilWriteMask" }),
         };
 
@@ -375,11 +384,17 @@ namespace GalaxyToon.Editor
             if (title.StartsWith("トライプラナー")) return Kw("_TRIPLANAR");
             if (title.StartsWith("ラメ")) return Kw("_GLITTER", "_REFRACTION");
             if (title.StartsWith("瞳")) return Kw("_EYE");
+            if (title.StartsWith("SSS")) return Kw("_SSS");
+            if (title.StartsWith("ストッキング")) return Kw("_SHEER");
             if (title.StartsWith("髪の影")) return Kw("_HAIR_SHADOW") || m.GetFloat("_HairShadowCast") > 0.5f;
+            if (title.StartsWith("網タイツ")) return Kw("_NET_DENT");
             if (title.StartsWith("カメラが近い")) return Kw("_NEAR_FADE");
             if (title.StartsWith("アニメ塗り")) return Kw("_ANIME");
             if (title.StartsWith("顔")) return Kw("_FACE", "_FACE_SDF");
+            if (title.StartsWith("ふくらむ")) return m.GetFloat("_Inflate") > 0.5f || m.GetFloat("_LegPush") > 0.5f;
+            if (title.StartsWith("触れる")) return m.GetFloat("_SoftTouch") > 0.5f;
             if (title.StartsWith("髪の揺れ")) return m.GetFloat("_HairSway") > 0f;
+            if (title.StartsWith("毛先")) return m.GetColor("_TipColor").a > 0f;
             if (title.StartsWith("ハイライト")) return Kw("_SPECULAR", "_MATCAP", "_MATCAP2");
             if (title.StartsWith("異方性")) return Kw("_ANISOTROPY");
             if (title.StartsWith("リムライト")) return Kw("_RIMLIGHT");
@@ -455,7 +470,7 @@ namespace GalaxyToon.Editor
             public void Apply(Material m)
             {
                 if (!Environment) // キャラ: キャラ専用ライト・環境光なし・金属なし(背景プリセットの後に押しても戻る)
-                    foreach (var (n, v) in new[] { ("_LightSource", 0f), ("_AmbientStrength", 0f), ("_AdditionalLightStrength", 0f), ("_ShadowReceive", 0f), ("_Metallic", 0f), ("_Smoothness", 0f) }) m.SetFloat(n, v);
+                    foreach (var (n, v) in new[] { ("_LightSource", 0f), ("_AmbientStrength", 0f), ("_AdditionalLightStrength", 0f), ("_CastShadowAmount", 0f), ("_Metallic", 0f), ("_Smoothness", 0f) }) m.SetFloat(n, v);
                 foreach (var (n, v) in Floats) m.SetFloat(n, v);
                 foreach (var (n, c) in Colors) m.SetColor(n, c);
             }
@@ -464,23 +479,23 @@ namespace GalaxyToon.Editor
         private static readonly Preset[] Presets =
         {
             new Preset { Name = "肌", Tooltip = "やわらかい1段影(赤み)、弱いリム、細い輪郭線。",
-                Floats = new[] { ("_ShadowBorder", 0.5f), ("_ShadowBlur", 0.12f), ("_FaceShading", 0f), ("_OutlineWidth", 0.06f), ("_OutlineTexBlend", 0.7f), ("_RimFresnelPower", 4f), ("_SpecularSize", 0.05f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.97f, 0.82f, 0.8f, 1f)), ("_Shadow2ndColor", new Color(0.9f, 0.7f, 0.7f, 0f)), ("_RimColor", new Color(1f, 0.95f, 0.9f, 0.15f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.5f), ("_Shade1Soft", 0.12f), ("_FaceShading", 0f), ("_OutlineWidth", 0.06f), ("_OutlineTexBlend", 0.7f), ("_RimFalloff", 4f), ("_SpecularSize", 0.05f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.97f, 0.82f, 0.8f, 1f)), ("_Shade2Tint", new Color(0.9f, 0.7f, 0.7f, 0f)), ("_RimColor", new Color(1f, 0.95f, 0.9f, 0.15f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Name = "顔", Tooltip = "肌と同じ色で、顔の細かい影を消す(顔の陰影を平らに 0.8)。キャラに GalaxyToonFace を付けると首の向きに追従します。",
-                Floats = new[] { ("_ShadowBorder", 0.45f), ("_ShadowBlur", 0.1f), ("_FaceShading", 0.8f), ("_OutlineWidth", 0.04f), ("_OutlineTexBlend", 0.7f), ("_RimFresnelPower", 5f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.97f, 0.84f, 0.82f, 1f)), ("_Shadow2ndColor", new Color(0.9f, 0.7f, 0.7f, 0f)), ("_RimColor", new Color(1f, 0.95f, 0.9f, 0.1f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.45f), ("_Shade1Soft", 0.1f), ("_FaceShading", 0.8f), ("_OutlineWidth", 0.04f), ("_OutlineTexBlend", 0.7f), ("_RimFalloff", 5f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.97f, 0.84f, 0.82f, 1f)), ("_Shade2Tint", new Color(0.9f, 0.7f, 0.7f, 0f)), ("_RimColor", new Color(1f, 0.95f, 0.9f, 0.1f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Name = "髪", Tooltip = "くっきりした2段影、ハイライト(天使の輪っぽい光沢)、細いリム、輪郭線。前髪を透かすときはメニュー「Tools/GalaxyToon/前髪を透過する」でキャラに付けます。",
-                Floats = new[] { ("_ShadowBorder", 0.5f), ("_ShadowBlur", 0.05f), ("_Shadow2ndBorder", 0.3f), ("_Shadow2ndBlur", 0.05f), ("_FaceShading", 0f), ("_OutlineWidth", 0.08f), ("_OutlineTexBlend", 0.6f), ("_SpecularSize", 0.04f), ("_SpecularBlur", 0.02f), ("_RimFresnelPower", 3.5f), ("_RimBorder", 0.6f), ("_RimBlur", 0.1f), ("_RimShadowMask", 0.25f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.8f, 0.72f, 0.78f, 1f)), ("_Shadow2ndColor", new Color(0.62f, 0.55f, 0.68f, 0.5f)), ("_SpecularColor", new Color(1f, 0.97f, 0.9f, 0.35f)), ("_RimColor", new Color(1.05f, 1.02f, 1f, 0.6f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.5f), ("_Shade1Soft", 0.05f), ("_Shade2Edge", 0.3f), ("_Shade2Soft", 0.05f), ("_FaceShading", 0f), ("_OutlineWidth", 0.08f), ("_OutlineTexBlend", 0.6f), ("_SpecularSize", 0.04f), ("_SpecularSoft", 0.02f), ("_RimFalloff", 3.5f), ("_RimEdge", 0.6f), ("_RimSoft", 0.1f), ("_RimShadeFade", 0.25f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.8f, 0.72f, 0.78f, 1f)), ("_Shade2Tint", new Color(0.62f, 0.55f, 0.68f, 0.5f)), ("_SpecularColor", new Color(1f, 0.97f, 0.9f, 0.35f)), ("_RimColor", new Color(1.05f, 1.02f, 1f, 0.6f)) } },
             new Preset { Name = "服", Tooltip = "布らしい2段影、細いリム、輪郭線。光沢なし。",
-                Floats = new[] { ("_ShadowBorder", 0.5f), ("_ShadowBlur", 0.08f), ("_Shadow2ndBorder", 0.25f), ("_Shadow2ndBlur", 0.1f), ("_FaceShading", 0f), ("_OutlineWidth", 0.08f), ("_OutlineTexBlend", 0.5f), ("_RimFresnelPower", 3.5f), ("_RimBorder", 0.6f), ("_RimBlur", 0.1f), ("_RimShadowMask", 0.25f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.8f, 0.78f, 0.88f, 1f)), ("_Shadow2ndColor", new Color(0.62f, 0.6f, 0.75f, 0.4f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1.05f, 1.02f, 1f, 0.6f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.5f), ("_Shade1Soft", 0.08f), ("_Shade2Edge", 0.25f), ("_Shade2Soft", 0.1f), ("_FaceShading", 0f), ("_OutlineWidth", 0.08f), ("_OutlineTexBlend", 0.5f), ("_RimFalloff", 3.5f), ("_RimEdge", 0.6f), ("_RimSoft", 0.1f), ("_RimShadeFade", 0.25f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.8f, 0.78f, 0.88f, 1f)), ("_Shade2Tint", new Color(0.62f, 0.6f, 0.75f, 0.4f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1.05f, 1.02f, 1f, 0.6f)) } },
             new Preset { Name = "金属", Tooltip = "強いハイライトとリム、濃い影。マットキャップに金属の球テクスチャを入れるとさらに金属らしくなります。",
-                Floats = new[] { ("_ShadowBorder", 0.55f), ("_ShadowBlur", 0.03f), ("_Shadow2ndBorder", 0.35f), ("_Shadow2ndBlur", 0.03f), ("_FaceShading", 0f), ("_OutlineWidth", 0.06f), ("_OutlineTexBlend", 0.3f), ("_SpecularSize", 0.12f), ("_SpecularBlur", 0.01f), ("_RimFresnelPower", 2f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.55f, 0.55f, 0.62f, 1f)), ("_Shadow2ndColor", new Color(0.35f, 0.35f, 0.42f, 0.8f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0.9f)), ("_RimColor", new Color(1f, 1f, 1f, 0.4f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.55f), ("_Shade1Soft", 0.03f), ("_Shade2Edge", 0.35f), ("_Shade2Soft", 0.03f), ("_FaceShading", 0f), ("_OutlineWidth", 0.06f), ("_OutlineTexBlend", 0.3f), ("_SpecularSize", 0.12f), ("_SpecularSoft", 0.01f), ("_RimFalloff", 2f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.55f, 0.55f, 0.62f, 1f)), ("_Shade2Tint", new Color(0.35f, 0.35f, 0.42f, 0.8f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0.9f)), ("_RimColor", new Color(1f, 1f, 1f, 0.4f)) } },
             new Preset { Name = "顔パーツ", Tooltip = "目・歯・舌・まつ毛など。影をほぼ付けず、輪郭線なし。",
-                Floats = new[] { ("_ShadowBorder", 0.3f), ("_ShadowBlur", 0.2f), ("_FaceShading", 0f), ("_OutlineWidth", 0f) },
-                Colors = new[] { ("_ShadowColor", new Color(0.92f, 0.9f, 0.95f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = new[] { ("_Shade1Edge", 0.3f), ("_Shade1Soft", 0.2f), ("_FaceShading", 0f), ("_OutlineWidth", 0f) },
+                Colors = new[] { ("_Shade1Tint", new Color(0.92f, 0.9f, 0.95f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
         };
 
         // 背景: シーンのメインライト・環境光・追加ライト・ほかの物の影を受ける。輪郭線なし。
@@ -488,9 +503,9 @@ namespace GalaxyToon.Editor
         {
             var list = new System.Collections.Generic.List<(string, float)>
             {
-                ("_LightSource", 1f), ("_AmbientStrength", 1f), ("_AdditionalLightStrength", 1f), ("_ShadowReceive", 1f),
-                ("_LightMinLimit", 0f), ("_LightMaxLimit", 1.5f), ("_OutlineWidth", 0f), ("_FaceShading", 0f), ("_FaceSphere", 0f),
-                ("_ShadowBorder", 0.5f), ("_ShadowBlur", 0.12f), ("_ReflectionSteps", 3f),
+                ("_LightSource", 1f), ("_AmbientStrength", 1f), ("_AdditionalLightStrength", 1f), ("_CastShadowAmount", 1f),
+                ("_LightFloor", 0f), ("_LightCeiling", 1.5f), ("_OutlineWidth", 0f), ("_FaceShading", 0f), ("_FaceSphere", 0f),
+                ("_Shade1Edge", 0.5f), ("_Shade1Soft", 0.12f), ("_ReflectionSteps", 3f),
             };
             list.AddRange(extra);
             return list.ToArray();
@@ -524,10 +539,10 @@ namespace GalaxyToon.Editor
             new Preset { Environment = true, Name = "雨 染み込み", Tooltip = "コンクリート・石・布の壁や地面が雨に打たれて水を吸い、まだらに色が濃くなる(染み込み 1、濡れると暗く 0.55)。つやはあまり出ない。",
                 Floats = new[] { ("_UseFx", 1f), ("_RainAmount", 0.7f), ("_RainReceive", 1f), ("_RainScale", 8f), ("_RainSpeed", 1f), ("_WetSoak", 1f), ("_WetDarken", 0.55f), ("_WetGloss", 0.3f) }, Colors = new (string, Color)[0] },
             new Preset { Environment = true, Name = "転送(消える)", Tooltip = "SF の転送・ワープで消える。足元から光る線が上がり、線の通った所が消える。ディゾルブの量を 0→1 に動かす(GalaxyTeleport を付ければ自動。服の入れ替えも可)。",
-                Floats = new[] { ("_UseDissolve", 1f), ("_DissolveAmount", 0f), ("_DissolveMode", 1f), ("_DissolveInvert", 0f), ("_DissolveStart", 0f), ("_DissolveNoiseScale", 1f), ("_DissolveNoiseStrength", 0.15f), ("_DissolveEdgeWidth", 0.03f) },
+                Floats = new[] { ("_UseDissolve", 1f), ("_DissolveAmount", 0f), ("_DissolveMode", 1f), ("_DissolveInvert", 0f), ("_DissolveStart", 0f), ("_DissolveNoiseScale", 1f), ("_DissolveNoiseAmount", 0.15f), ("_DissolveEdgeWidth", 0.03f) },
                 Colors = new[] { ("_DissolveEdgeColor", new Color(0.5f, 1.8f, 3.5f, 1f)) } },
             new Preset { Environment = true, Name = "転送(現れる)", Tooltip = "SF の転送で現れる(服の入れ替えの新しい服にも)。ディゾルブの量を 1→0 に動かすと、足元から光る線とともに現れる。",
-                Floats = new[] { ("_UseDissolve", 1f), ("_DissolveAmount", 0f), ("_DissolveMode", 1f), ("_DissolveInvert", 1f), ("_DissolveStart", 0f), ("_DissolveNoiseScale", 1f), ("_DissolveNoiseStrength", 0.15f), ("_DissolveEdgeWidth", 0.03f) },
+                Floats = new[] { ("_UseDissolve", 1f), ("_DissolveAmount", 0f), ("_DissolveMode", 1f), ("_DissolveInvert", 1f), ("_DissolveStart", 0f), ("_DissolveNoiseScale", 1f), ("_DissolveNoiseAmount", 0.15f), ("_DissolveEdgeWidth", 0.03f) },
                 Colors = new[] { ("_DissolveEdgeColor", new Color(0.5f, 1.8f, 3.5f, 1f)) } },
             new Preset { Environment = true, Name = "汚れ・すす", Tooltip = "火事・爆発・事故のあとのすす汚れ。しみが体に張り付き、つやが消える(汚れ 0.5)。GalaxyToonEffects の dirt でゲーム中に増減。",
                 Floats = new[] { ("_UseFx", 1f), ("_DirtAmount", 0.5f), ("_DirtReceive", 1f), ("_DirtScale", 12f) },
@@ -547,7 +562,22 @@ namespace GalaxyToon.Editor
         {
             new Preset { Environment = true, Name = "アニメ塗り", Tooltip = "日本のアニメ調。影色を地の色から自動で作り(鮮やかに・少し青紫へ)、境界をくっきり、肌の赤い境界線、ライトで色をくすませない、輪郭線を画面上で同じ太さに。肌は「影色の色相ずらし」を + にすると赤みの影に。",
                 Floats = new[] { ("_AnimeMode", 1f), ("_AnimeHardness", 0.85f), ("_AnimeShadowHue", -0.03f), ("_AnimeShadowSat", 0.35f), ("_AnimeShadowValue", 0.72f), ("_AnimeEdgeWidth", 0.035f), ("_AnimeFlatLight", 0.8f), ("_AnimeFlatNormal", 0.8f), ("_AnimeNoGloss", 0.85f), ("_AnimeOutlinePixel", 0.7f) },
-                Colors = new[] { ("_ShadowColor", new Color(1f, 1f, 1f, 1f)), ("_AnimeEdgeColor", new Color(1f, 0.5f, 0.42f, 0.5f)) } },
+                Colors = new[] { ("_Shade1Tint", new Color(1f, 1f, 1f, 1f)), ("_AnimeEdgeColor", new Color(1f, 0.5f, 0.42f, 0.5f)) } },
+            new Preset { Environment = true, Name = "肌 SSS (血色・透け)", Tooltip = "肌や耳・指先に表面下散乱(SSS)を足す。明暗の境目に鮮やかな血色帯がにじみ、逆光で耳や鼻先・指先が赤く透けます。「Tools/GalaxyToon/厚みマップを作る」で厚みマスクを作ると薄い所だけが透けます。",
+                Floats = new[] { ("_UseSss", 1f), ("_SssEdgeWidth", 0.12f), ("_SssShadowBleed", 0.15f), ("_SssTranslucency", 0.85f), ("_SssDistortion", 0.4f), ("_SssPower", 3.5f) },
+                Colors = new[] { ("_SssColor", new Color(1f, 0.32f, 0.25f, 0.65f)) } },
+            new Preset { Environment = true, Name = "ストッキング (シアー)", Tooltip = "デニール感のあるストッキング・タイツ・薄布。正面は素肌の色が透けて見え、輪郭(斜め)ほど繊維の色が濃く締まり、微細な光沢が乗ります。",
+                Floats = new[] { ("_UseSheer", 1f), ("_SheerAmount", 0.65f), ("_SheerPower", 2.2f), ("_SheerSheen", 0.25f) },
+                Colors = new[] { ("_SheerSkinColor", new Color(1f, 0.86f, 0.82f, 1f)) } },
+            new Preset { Environment = true, Name = "髪 2段天使の輪", Tooltip = "2段・毛束波打ちハイライト。メインの太い輪とサブの細い輪が毛束に沿ってギザギザに波打ち、板ポリ感のない繊細な髪のツヤになります。",
+                Floats = new[] { ("_AnisoShift", 0.05f), ("_AnisoSharpness", 35f), ("_AnisoBorder", 0.5f), ("_AnisoBlur", 0.1f), ("_AnisoShadowMask", 0.65f), ("_AnisoJitterStrength", 0.12f), ("_AnisoJitterScale", 38f), ("_Aniso2Shift", 0.22f), ("_Aniso2Sharpness", 95f) },
+                Colors = new[] { ("_AnisoColor", new Color(1f, 0.97f, 0.92f, 0.45f)), ("_Aniso2Color", new Color(1f, 1f, 1f, 0.35f)) } },
+            new Preset { Environment = true, Name = "クリアコート (二層艶)", Tooltip = "エナメル・硬質アーマー・革ベルトの透明ニス層。下地のマット感や金属感を保ったまま、表面だけにパキッと鋭い2層目の反射を乗せます。",
+                Floats = new[] { ("_ClearCoat", 0.85f), ("_ClearCoatSmoothness", 0.92f), ("_ReflectionStrength", 1f), ("_ReflectionSteps", 3f) },
+                Colors = new (string, Color)[0] },
+            new Preset { Environment = true, Name = "ベルベット (起毛布)", Tooltip = "フェルト・ベルベット・ピーチスキンの起毛布。輪郭に向かって布の表面が柔らかく白み、高級感のある衣装になります。",
+                Floats = new[] { ("_VelvetPower", 2.8f) },
+                Colors = new[] { ("_VelvetColor", new Color(1f, 0.96f, 0.94f, 0.45f)) } },
             new Preset { Environment = true, Name = "髪の影を落とす", Tooltip = "髪のマテリアルに。この髪の形で、顔・瞳に前髪の影を落とします(顔のマテリアルは「髪の影を受ける」)。",
                 Floats = new[] { ("_HairShadowCast", 1f) }, Colors = new (string, Color)[0] },
             new Preset { Environment = true, Name = "髪の影を受ける", Tooltip = "顔・瞳のマテリアルに。髪の影が光の向きに合わせて落ちます(長さ 1.2cm)。",
@@ -565,8 +595,8 @@ namespace GalaxyToon.Editor
                 Floats = new[] { ("_BlushAmount", 0.8f), ("_BlushSoft", 0.7f), ("_BlushLines", 0.6f) },
                 Colors = new[] { ("_BlushColor", new Color(1f, 0.42f, 0.48f, 0.6f)) } },
             new Preset { Environment = true, Name = "ラメ", Tooltip = "細かい鏡の粒が、光と視線の向きでキラキラまたたく(アイドル衣装・ネイル・装飾)。出る所は「ラメの出る所」マスクで。",
-                Floats = new[] { ("_GlitterScale", 300f), ("_GlitterSize", 0.25f), ("_GlitterDensity", 0.6f), ("_GlitterSharpness", 12f), ("_GlitterShadowMask", 0.7f) },
-                Colors = new[] { ("_GlitterColor", new Color(2f, 2f, 2f, 1f)) } },
+                Floats = new[] { ("_GlitterScale", 300f), ("_GlitterSize", 0.25f), ("_GlitterDensity", 0.6f), ("_GlitterSharpness", 12f), ("_GlitterShadeMask", 0.7f) },
+                Colors = new[] { ("_GlitterTint", new Color(2f, 2f, 2f, 1f)) } },
             new Preset { Environment = true, Name = "近づくと透ける", Tooltip = "カメラが 30cm より近いと網目で透け、10cm で消える(寄りのカメラで髪・体にめり込んだとき中が見えない)。",
                 Floats = new[] { ("_UseNearFade", 1f), ("_NearFadeStart", 0.1f), ("_NearFadeEnd", 0.3f) }, Colors = new (string, Color)[0] },
         };
@@ -583,19 +613,19 @@ namespace GalaxyToon.Editor
                 Floats = new[] { ("_UseFx", 1f), ("_LiquidAmount", 0.6f), ("_LiquidReceive", 1f), ("_LiquidScale", 25f), ("_LiquidFlow", 0.1f), ("_LiquidGloss", 1.2f), ("_FxBump", 0.3f), ("_WetAmount", 0f), ("_SweatAmount", 0f) },
                 Colors = new[] { ("_LiquidColor", new Color(1f, 1f, 1f, 0.75f)) } },
             new Preset { Environment = true, Name = "涙・しずく", Tooltip = "涙・水滴・雨粒の透明な水(GalaxyTears や糸のマテリアル用)。半透明、両面、鋭いハイライトと縁の光、影を受けない。",
-                Floats = new[] { ("_RenderMode", 2f), ("_Cull", 0f), ("_ShadowReceive", 0f), ("_LightMinLimit", 0.8f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_ReflectionStrength", 1f), ("_SpecularSize", 0.2f), ("_SpecularBlur", 0.02f), ("_RimFresnelPower", 1.5f) },
+                Floats = new[] { ("_RenderMode", 2f), ("_Cull", 0f), ("_CastShadowAmount", 0f), ("_LightFloor", 0.8f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_ReflectionStrength", 1f), ("_SpecularSize", 0.2f), ("_SpecularSoft", 0.02f), ("_RimFalloff", 1.5f) },
                 Colors = new[] { ("_BaseColor", new Color(0.85f, 0.93f, 1f, 0.3f)), ("_RimColor", new Color(0.9f, 0.96f, 1f, 0.8f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)) } },
             new Preset { Environment = true, Name = "宝石(屈折)", Tooltip = "宝石・クリスタル・厚いガラス。半透明で後ろの景色がゆがみ、虹色ににじみ、細かい面がきらめく。",
-                Floats = new[] { ("_RenderMode", 2f), ("_RefractionStrength", 0.5f), ("_RefractionDispersion", 0.35f), ("_Metallic", 0f), ("_Smoothness", 0.95f), ("_ReflectionStrength", 1.2f), ("_SpecularSize", 0.02f), ("_SpecularBlur", 0.01f), ("_GlitterScale", 40f), ("_GlitterSize", 0.35f), ("_GlitterDensity", 0.8f), ("_GlitterSharpness", 6f), ("_GlitterShadowMask", 0f), ("_RimFresnelPower", 1.5f) },
-                Colors = new[] { ("_BaseColor", new Color(0.8f, 0.9f, 1f, 0.35f)), ("_GlitterColor", new Color(2.5f, 2.5f, 2.5f, 1f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)), ("_RimColor", new Color(0.9f, 0.95f, 1f, 0.7f)) } },
+                Floats = new[] { ("_RenderMode", 2f), ("_RefractionStrength", 0.5f), ("_RefractionDispersion", 0.35f), ("_Metallic", 0f), ("_Smoothness", 0.95f), ("_ReflectionStrength", 1.2f), ("_SpecularSize", 0.02f), ("_SpecularSoft", 0.01f), ("_GlitterScale", 40f), ("_GlitterSize", 0.35f), ("_GlitterDensity", 0.8f), ("_GlitterSharpness", 6f), ("_GlitterShadeMask", 0f), ("_RimFalloff", 1.5f) },
+                Colors = new[] { ("_BaseColor", new Color(0.8f, 0.9f, 1f, 0.35f)), ("_GlitterTint", new Color(2.5f, 2.5f, 2.5f, 1f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)), ("_RimColor", new Color(0.9f, 0.95f, 1f, 0.7f)) } },
             new Preset { Environment = true, Name = "服 ソフト", Tooltip = "柔らかい布(綿・ニット)。ぼけた影、つやなし。",
-                Floats = new[] { ("_ShadowBlur", 0.2f), ("_Shadow2ndBlur", 0.2f), ("_SpecularSize", 0.05f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_RimFresnelPower", 4f) },
+                Floats = new[] { ("_Shade1Soft", 0.2f), ("_Shade2Soft", 0.2f), ("_SpecularSize", 0.05f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_RimFalloff", 4f) },
                 Colors = new[] { ("_SpecularColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1f, 1f, 1f, 0.08f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "服 ラテックス", Tooltip = "ラテックス・エナメル。くっきりした影、小さく鋭いハイライト、強い縁のてかりと映り込み。",
-                Floats = new[] { ("_ShadowBlur", 0.05f), ("_SpecularSize", 0.015f), ("_SpecularBlur", 0.015f), ("_Metallic", 0f), ("_Smoothness", 0.85f), ("_ReflectionStrength", 0.6f), ("_ReflectionSteps", 3f), ("_RimFresnelPower", 2.5f) },
+                Floats = new[] { ("_Shade1Soft", 0.05f), ("_SpecularSize", 0.015f), ("_SpecularSoft", 0.015f), ("_Metallic", 0f), ("_Smoothness", 0.85f), ("_ReflectionStrength", 0.6f), ("_ReflectionSteps", 3f), ("_RimFalloff", 2.5f) },
                 Colors = new[] { ("_SpecularColor", new Color(1f, 1f, 1f, 0.5f)), ("_RimColor", new Color(0.85f, 0.9f, 1f, 0.35f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "服 皮製品", Tooltip = "革(ジャケット・ブーツ・ベルト)。やや広いハイライトと弱い映り込み、しっかりした影。",
-                Floats = new[] { ("_ShadowBlur", 0.08f), ("_SpecularSize", 0.06f), ("_SpecularBlur", 0.1f), ("_Metallic", 0f), ("_Smoothness", 0.45f), ("_ReflectionStrength", 0.3f), ("_ReflectionSteps", 3f), ("_RimFresnelPower", 3f) },
+                Floats = new[] { ("_Shade1Soft", 0.08f), ("_SpecularSize", 0.06f), ("_SpecularSoft", 0.1f), ("_Metallic", 0f), ("_Smoothness", 0.45f), ("_ReflectionStrength", 0.3f), ("_ReflectionSteps", 3f), ("_RimFalloff", 3f) },
                 Colors = new[] { ("_SpecularColor", new Color(1f, 0.97f, 0.92f, 0.3f)), ("_RimColor", new Color(1f, 1f, 1f, 0.15f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "服 濡れ", Tooltip = "雨や水で濡れた服。色が濃く沈み、張りが無くなってふくらみが減り、体に沿う(縮み 1.5cm)。つやは控えめ。雨は表面で跳ね返り、流れるしずくは少量。量は GalaxyToonEffects の wet・rain で動く。",
                 Floats = new[] { ("_UseFx", 1f), ("_WetAmount", 1f), ("_WetReceive", 1f), ("_WetDarken", 0.8f), ("_WetSoak", 0.7f), ("_WetGloss", 0.2f), ("_WetShrink", 0.4f), ("_RainReceive", 1f), ("_RainFlowAmount", 0.08f), ("_RainSplash", 1f), ("_RainRipples", 0f), ("_SweatReceive", 0f), ("_SweatAmount", 0f), ("_LiquidAmount", 0f) },
@@ -610,57 +640,57 @@ namespace GalaxyToon.Editor
                 Floats = new[] { ("_UseFx", 1f), ("_WetReceive", 1f), ("_WetDarken", 0.65f), ("_WetSoak", 0.3f), ("_WetGloss", 0.7f), ("_WetShrink", 0f), ("_SweatReceive", 0f), ("_RainReceive", 1f), ("_RainRipples", 0f), ("_LiquidAmount", 0f) },
                 Colors = new (string, Color)[0] },
             new Preset { Environment = true, Name = "木目", Tooltip = "ニス・ワックスを塗った木(床・家具・楽器)。木目の模様はテクスチャで。木目に沿って筋状に伸びる異方性のつや(UV の横方向)と、弱い映り込み。",
-                Floats = new[] { ("_Metallic", 0f), ("_Smoothness", 0.55f), ("_ReflectionStrength", 0.35f), ("_ReflectionSteps", 3f), ("_ShadowBlur", 0.1f), ("_SpecularSize", 0.08f), ("_SpecularBlur", 0.15f), ("_AnisoSharpness", 25f), ("_AnisoBlur", 0.3f), ("_AnisoShadowMask", 0.5f), ("_RimFresnelPower", 4f) },
+                Floats = new[] { ("_Metallic", 0f), ("_Smoothness", 0.55f), ("_ReflectionStrength", 0.35f), ("_ReflectionSteps", 3f), ("_Shade1Soft", 0.1f), ("_SpecularSize", 0.08f), ("_SpecularSoft", 0.15f), ("_AnisoSharpness", 25f), ("_AnisoBlur", 0.3f), ("_AnisoShadowMask", 0.5f), ("_RimFalloff", 4f) },
                 Colors = new[] { ("_SpecularColor", new Color(1f, 0.95f, 0.85f, 0.3f)), ("_AnisoColor", new Color(1f, 0.95f, 0.85f, 0.4f)), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "木材", Tooltip = "塗っていない木(角材・板・丸太・木箱)。つやも映り込みも無く、影はやわらかめ。",
-                Floats = new[] { ("_Metallic", 0f), ("_Smoothness", 0.1f), ("_ReflectionStrength", 0f), ("_ShadowBlur", 0.2f), ("_SpecularSize", 0.05f), ("_RimFresnelPower", 4f) },
+                Floats = new[] { ("_Metallic", 0f), ("_Smoothness", 0.1f), ("_ReflectionStrength", 0f), ("_Shade1Soft", 0.2f), ("_SpecularSize", 0.05f), ("_RimFalloff", 4f) },
                 Colors = new[] { ("_SpecularColor", NoSpec), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "ペットボトル", Tooltip = "薄い透明な樹脂(ペットボトル・ビニール・透明な容器)。半透明・両面で、鋭いハイライト、縁が白く光り、後ろがわずかにゆがむ。中身の色はメインカラー(A)で。",
-                Floats = new[] { ("_RenderMode", 2f), ("_Cull", 0f), ("_Metallic", 0f), ("_Smoothness", 0.9f), ("_ReflectionStrength", 0.7f), ("_ReflectionSteps", 0f), ("_RefractionStrength", 0.08f), ("_RefractionDispersion", 0f), ("_SpecularSize", 0.03f), ("_SpecularBlur", 0.02f), ("_RimFresnelPower", 2f), ("_RimBlur", 0.4f), ("_LightMinLimit", 0.5f) },
+                Floats = new[] { ("_RenderMode", 2f), ("_Cull", 0f), ("_Metallic", 0f), ("_Smoothness", 0.9f), ("_ReflectionStrength", 0.7f), ("_ReflectionSteps", 0f), ("_RefractionStrength", 0.08f), ("_RefractionDispersion", 0f), ("_SpecularSize", 0.03f), ("_SpecularSoft", 0.02f), ("_RimFalloff", 2f), ("_RimSoft", 0.4f), ("_LightFloor", 0.5f) },
                 Colors = new[] { ("_BaseColor", new Color(0.92f, 0.96f, 1f, 0.25f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0.8f)), ("_RimColor", new Color(1f, 1f, 1f, 0.5f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "レース", Tooltip = "レース・網・透かし編み。テクスチャの A で穴を抜く(切り抜き)、両面、つやなし、光を少し通す薄い影。",
-                Floats = new[] { ("_RenderMode", 1f), ("_Cull", 0f), ("_Cutoff", 0.5f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_ReflectionStrength", 0f), ("_ShadowBlur", 0.25f), ("_SpecularSize", 0.05f), ("_RimFresnelPower", 4f), ("_LightMinLimit", 0.25f) },
+                Floats = new[] { ("_RenderMode", 1f), ("_Cull", 0f), ("_Cutoff", 0.5f), ("_Metallic", 0f), ("_Smoothness", 0f), ("_ReflectionStrength", 0f), ("_Shade1Soft", 0.25f), ("_SpecularSize", 0.05f), ("_RimFalloff", 4f), ("_LightFloor", 0.25f) },
                 Colors = new[] { ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0.12f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "水", Tooltip = "水面・水たまり・水の入った容器。半透明で後ろがゆがみ、鏡のような映り込みと鋭いハイライト。上を向いた面には雨の波紋がゆっくり広がる(止めるなら「雨」を 0)。色はメインカラー(A)で。",
-                Floats = new[] { ("_RenderMode", 2f), ("_Metallic", 0f), ("_Smoothness", 1f), ("_ReflectionStrength", 1.5f), ("_ReflectionSteps", 0f), ("_RefractionStrength", 0.3f), ("_RefractionDispersion", 0.05f), ("_SpecularSize", 0.03f), ("_SpecularBlur", 0.01f), ("_RimFresnelPower", 2f), ("_RimBlur", 0.4f), ("_LightMinLimit", 0.4f), ("_ShadowReceive", 0f), ("_UseFx", 1f), ("_RainAmount", 0.5f), ("_RainReceive", 1f), ("_RainScale", 6f), ("_RainSpeed", 0.6f) },
+                Floats = new[] { ("_RenderMode", 2f), ("_Metallic", 0f), ("_Smoothness", 1f), ("_ReflectionStrength", 1.5f), ("_ReflectionSteps", 0f), ("_RefractionStrength", 0.3f), ("_RefractionDispersion", 0.05f), ("_SpecularSize", 0.03f), ("_SpecularSoft", 0.01f), ("_RimFalloff", 2f), ("_RimSoft", 0.4f), ("_LightFloor", 0.4f), ("_CastShadowAmount", 0f), ("_UseFx", 1f), ("_RainAmount", 0.5f), ("_RainReceive", 1f), ("_RainScale", 6f), ("_RainSpeed", 0.6f) },
                 Colors = new[] { ("_BaseColor", new Color(0.55f, 0.8f, 0.95f, 0.45f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)), ("_RimColor", new Color(0.8f, 0.95f, 1f, 0.6f)), ("_AnisoColor", new Color(1f, 1f, 1f, 0f)) } },
         };
 
         private static readonly Preset[] EnvironmentPresets =
         {
             new Preset { Environment = true, Name = "金属", Tooltip = "むき出しの金属(配管・手すり・機械)。金属 1・つや 0.7、映り込みが地の色に染まる。",
-                Floats = Env(("_Metallic", 1f), ("_Smoothness", 0.7f), ("_ReflectionStrength", 1f), ("_ShadowBlur", 0.06f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.5f, 0.52f, 0.6f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0.15f)) } },
+                Floats = Env(("_Metallic", 1f), ("_Smoothness", 0.7f), ("_ReflectionStrength", 1f), ("_Shade1Soft", 0.06f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.5f, 0.52f, 0.6f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0.15f)) } },
             new Preset { Environment = true, Name = "塗装金属", Tooltip = "塗装した金属(扉・ロッカー・機械の外板)。金属 0・つや 0.5 の塗膜のつや。",
                 Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.5f), ("_ReflectionStrength", 0.6f)),
-                Colors = new[] { ("_ShadowColor", NeutralShadow), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
+                Colors = new[] { ("_Shade1Tint", NeutralShadow), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "コンクリート", Tooltip = "コンクリート・石・床。つやなし、ぼけた影。UV が無いならトライプラナーを ON。",
-                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.05f), ("_ReflectionStrength", 0f), ("_ShadowBlur", 0.25f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.66f, 0.66f, 0.72f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.05f), ("_ReflectionStrength", 0f), ("_Shade1Soft", 0.25f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.66f, 0.66f, 0.72f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "プラスチック", Tooltip = "樹脂・ゴム以外の小物。金属 0・つや 0.65、白いハイライト。",
-                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.65f), ("_ReflectionStrength", 0.4f), ("_ShadowBlur", 0.08f)),
-                Colors = new[] { ("_ShadowColor", NeutralShadow), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0.1f)) } },
+                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.65f), ("_ReflectionStrength", 0.4f), ("_Shade1Soft", 0.08f)),
+                Colors = new[] { ("_Shade1Tint", NeutralShadow), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0.1f)) } },
             new Preset { Environment = true, Name = "発光パネル", Tooltip = "照明・モニター・看板。影を薄くし、発光色を入れる(発光色はあとで好みに)。ライトマップを焼くと周りも照らす。",
                 Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.3f), ("_ReflectionStrength", 0.2f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.85f, 0.85f, 0.9f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)), ("_EmissionColor", new Color(1.5f, 1.5f, 1.4f, 1f)) } },
+                Colors = new[] { ("_Shade1Tint", new Color(0.85f, 0.85f, 0.9f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)), ("_EmissionColor", new Color(1.5f, 1.5f, 1.4f, 1f)) } },
             new Preset { Environment = true, Name = "ガラス", Tooltip = "窓・レンズ。描画モードを「半透明」にして使う。つや 0.95 の強い映り込み。",
                 Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.95f), ("_ReflectionStrength", 1.2f), ("_ReflectionSteps", 0f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.9f, 0.9f, 0.95f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(0.8f, 0.9f, 1f, 0.3f)) } },
+                Colors = new[] { ("_Shade1Tint", new Color(0.9f, 0.9f, 0.95f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(0.8f, 0.9f, 1f, 0.3f)) } },
             new Preset { Environment = true, Name = "紙", Tooltip = "紙・段ボール・布張り。つやも映り込みも無く、影はやわらかく薄め(光を少し通す感じ)。",
-                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.02f), ("_ReflectionStrength", 0f), ("_ShadowBlur", 0.3f), ("_ShadowBorder", 0.45f), ("_LightMaxLimit", 1.2f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.8f, 0.78f, 0.78f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.02f), ("_ReflectionStrength", 0f), ("_Shade1Soft", 0.3f), ("_Shade1Edge", 0.45f), ("_LightCeiling", 1.2f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.8f, 0.78f, 0.78f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
             new Preset { Environment = true, Name = "透過プラスチック", Tooltip = "ヘッドライトのカバー・色付きハザード・航行灯。描画モードを「半透明」にし、強い映り込みと縁の光を入れます。色と透け具合はメインカラー(A)、点灯は「発光色」で。",
-                Floats = Env(("_RenderMode", 2f), ("_Metallic", 0f), ("_Smoothness", 0.9f), ("_ReflectionStrength", 0.8f), ("_ReflectionSteps", 0f), ("_ShadowBlur", 0.2f), ("_LightMinLimit", 0.3f), ("_RimFresnelPower", 2.5f), ("_RimBlur", 0.5f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.85f, 0.85f, 0.9f, 0.5f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0.6f)), ("_RimColor", new Color(1f, 1f, 1f, 0.35f)) } },
+                Floats = Env(("_RenderMode", 2f), ("_Metallic", 0f), ("_Smoothness", 0.9f), ("_ReflectionStrength", 0.8f), ("_ReflectionSteps", 0f), ("_Shade1Soft", 0.2f), ("_LightFloor", 0.3f), ("_RimFalloff", 2.5f), ("_RimSoft", 0.5f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.85f, 0.85f, 0.9f, 0.5f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 0.6f)), ("_RimColor", new Color(1f, 1f, 1f, 0.35f)) } },
             new Preset { Environment = true, Name = "ダイヤモンド", Tooltip = "宝石・クリスタル。鏡のような強い映り込み、鋭いハイライト、強い縁の光。影はほぼ付けない。",
-                Floats = Env(("_Metallic", 0.2f), ("_Smoothness", 1f), ("_ReflectionStrength", 2f), ("_ReflectionSteps", 4f), ("_ShadowBlur", 0.05f), ("_LightMinLimit", 0.5f), ("_LightMaxLimit", 3f), ("_SpecularSize", 0.02f), ("_SpecularBlur", 0.01f), ("_RimFresnelPower", 1.5f), ("_RimBlur", 0.3f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.7f, 0.75f, 0.9f, 0.4f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)), ("_RimColor", new Color(0.9f, 0.95f, 1f, 0.8f)) } },
+                Floats = Env(("_Metallic", 0.2f), ("_Smoothness", 1f), ("_ReflectionStrength", 2f), ("_ReflectionSteps", 4f), ("_Shade1Soft", 0.05f), ("_LightFloor", 0.5f), ("_LightCeiling", 3f), ("_SpecularSize", 0.02f), ("_SpecularSoft", 0.01f), ("_RimFalloff", 1.5f), ("_RimSoft", 0.3f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.7f, 0.75f, 0.9f, 0.4f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", new Color(1f, 1f, 1f, 1f)), ("_RimColor", new Color(0.9f, 0.95f, 1f, 0.8f)) } },
             new Preset { Environment = true, Name = "マグマ", Tooltip = "溶岩・溶けた金属。赤橙の発光がゆっくり脈打ち、影は黒い岩肌。発光の形はテクスチャの明るい所(発光マスク)で決まります。",
-                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.1f), ("_ReflectionStrength", 0f), ("_ShadowBlur", 0.1f), ("_LightMaxLimit", 4f), ("_EmissionBlink", 0.4f)),
-                Colors = new[] { ("_ShadowColor", new Color(0.25f, 0.08f, 0.05f, 1f)), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 0.4f, 0.1f, 0.4f)), ("_EmissionColor", new Color(3f, 0.8f, 0.1f, 1f)) } },
+                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.1f), ("_ReflectionStrength", 0f), ("_Shade1Soft", 0.1f), ("_LightCeiling", 4f), ("_EmissionFlicker", 0.4f)),
+                Colors = new[] { ("_Shade1Tint", new Color(0.25f, 0.08f, 0.05f, 1f)), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 0.4f, 0.1f, 0.4f)), ("_EmissionColor", new Color(3f, 0.8f, 0.1f, 1f)) } },
             new Preset { Environment = true, Name = "建物の壁", Tooltip = "外壁・内装のつや消し塗装。つや 0.2、やわらかい影。",
-                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.2f), ("_ReflectionStrength", 0.3f), ("_ShadowBlur", 0.18f)),
-                Colors = new[] { ("_ShadowColor", NeutralShadow), ("_Shadow2ndColor", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
+                Floats = Env(("_Metallic", 0f), ("_Smoothness", 0.2f), ("_ReflectionStrength", 0.3f), ("_Shade1Soft", 0.18f)),
+                Colors = new[] { ("_Shade1Tint", NeutralShadow), ("_Shade2Tint", new Color(1f, 1f, 1f, 0f)), ("_SpecularColor", NoSpec), ("_RimColor", new Color(1f, 1f, 1f, 0f)) } },
         };
 
         /// <summary>名前でプリセットを当てる(ツール用)。見つかれば true。</summary>
@@ -693,6 +723,7 @@ namespace GalaxyToon.Editor
             material.SetFloat("_DstBlend", (float)(transparent ? BlendMode.OneMinusSrcAlpha : BlendMode.Zero));
             material.SetFloat("_ZWrite", transparent ? 0f : 1f);
             material.SetFloat("_AlphaClip", cutout ? 1f : 0f);
+            if (material.HasProperty("_AlphaToMask")) material.SetFloat("_AlphaToMask", cutout ? 1f : 0f); // 切り抜きの縁を MSAA でなめらかに
             if (cutout) material.EnableKeyword("_ALPHATEST_ON"); else material.DisableKeyword("_ALPHATEST_ON");
             material.SetOverrideTag("RenderType", transparent ? "Transparent" : cutout ? "TransparentCutout" : "Opaque");
             int baseQueue = (int)(transparent ? RenderQueue.Transparent : cutout ? RenderQueue.AlphaTest : RenderQueue.Geometry);
@@ -703,11 +734,15 @@ namespace GalaxyToon.Editor
             SetKeyword(material, "_SHADOW_RAMP", material.GetTexture("_ShadowRampTex") != null);
             // ランプの部位分け・ハイライトのランプはキーワードを増やさず値で切り替える(切り替えでコンパイルが走らない)
             if (material.HasProperty("_RampIdOn")) material.SetFloat("_RampIdOn", material.GetTexture("_RampIdMap") != null ? 1f : 0f);
+            if (material.HasProperty("_ShadeMapOn")) material.SetFloat("_ShadeMapOn", material.GetTexture("_ShadeMap") != null ? 1f : 0f);
             if (material.HasProperty("_SpecularRampOn")) material.SetFloat("_SpecularRampOn", material.GetTexture("_SpecularRampTex") != null ? 1f : 0f);
             // トグル式の機能(プリセットやスクリプトから値だけ変えたときも、キーワードを合わせる)
             SetKeyword(material, "_GALAXY_FX", material.GetFloat("_UseFx") > 0.5f);
             SetKeyword(material, "_DISSOLVE", material.GetFloat("_UseDissolve") > 0.5f);
+            if (material.HasProperty("_DissolveNoiseTexOn")) material.SetFloat("_DissolveNoiseTexOn", material.GetTexture("_DissolveNoise") != null ? 1f : 0f); // テクスチャを入れたらそれで消す
             SetKeyword(material, "_DEPTH_RIM", material.GetFloat("_DepthRim") > 0.5f);
+            if (material.HasProperty("_CreviceAO")) SetKeyword(material, "_CREVICE_AO", material.GetFloat("_CreviceAO") > 0.5f);
+            if (material.HasProperty("_ContactShadow")) SetKeyword(material, "_CONTACT_SHADOW", material.GetFloat("_ContactShadow") > 0.5f);
             SetKeyword(material, "_FACE_SDF", material.GetFloat("_UseFaceSdf") > 0.5f);
             if (material.HasProperty("_AnimeMode")) SetKeyword(material, "_ANIME", material.GetFloat("_AnimeMode") > 0.5f);
             SetKeyword(material, "_TRIPLANAR", material.GetFloat("_UseTriplanar") > 0.5f);
@@ -716,16 +751,16 @@ namespace GalaxyToon.Editor
             SetKeyword(material, "_EMISSION2", material.GetTexture("_Emission2Map") != null);
             // 値が「効かない」機能は外す(計算もビルドもしない)
             SetKeyword(material, "_FACE", material.GetFloat("_FaceShading") > 0f || material.GetFloat("_FaceSphere") > 0f);
-            SetKeyword(material, "_SHADOW2ND", material.GetColor("_Shadow2ndColor").a > 0f);
-            SetKeyword(material, "_GLOSSY", material.GetFloat("_Metallic") > 0f || material.GetFloat("_Smoothness") > 0f);
+            SetKeyword(material, "_SHADOW2ND", material.GetColor("_Shade2Tint").a > 0f);
+            SetKeyword(material, "_GLOSSY", material.GetFloat("_Metallic") > 0f || material.GetFloat("_Smoothness") > 0f || (material.HasProperty("_ClearCoat") && material.GetFloat("_ClearCoat") > 0f) || (material.HasProperty("_VelvetColor") && material.GetColor("_VelvetColor").a > 0f));
             SetKeyword(material, "_ADDLIGHT", material.GetFloat("_AdditionalLightStrength") > 0f);
             SetKeyword(material, "_SPECULAR", material.GetColor("_SpecularColor").a > 0f);
-            SetKeyword(material, "_RIMLIGHT", material.GetColor("_RimColor").a > 0f);
+            SetKeyword(material, "_RIMLIGHT", material.GetColor("_RimColor").a > 0f || (material.HasProperty("_RimOppositeColor") && material.GetColor("_RimOppositeColor").a > 0f));
             SetKeyword(material, "_MATCAP", material.GetTexture("_MatCapTex") != null && material.GetColor("_MatCapColor").a > 0f);
             SetKeyword(material, "_COLORADJUST", Mathf.Abs(material.GetFloat("_HueShift")) > 1e-4f || Mathf.Abs(material.GetFloat("_Saturation") - 1f) > 1e-4f || Mathf.Abs(material.GetFloat("_Brightness") - 1f) > 1e-4f || Mathf.Abs(material.GetFloat("_Gamma") - 1f) > 1e-4f);
-            SetKeyword(material, "_SHADOW3RD", material.GetColor("_Shadow3rdColor").a > 0f);
-            SetKeyword(material, "_ANISOTROPY", material.GetColor("_AnisoColor").a > 0f);
-            SetKeyword(material, "_BACKLIGHT", material.GetColor("_BacklightColor").a > 0f);
+            SetKeyword(material, "_SHADOW3RD", material.GetColor("_Shade3Tint").a > 0f);
+            SetKeyword(material, "_ANISOTROPY", material.GetColor("_AnisoColor").a > 0f || (material.HasProperty("_Aniso2Color") && material.GetColor("_Aniso2Color").a > 0f));
+            SetKeyword(material, "_BACKLIGHT", material.GetColor("_BackLightTint").a > 0f);
             SetKeyword(material, "_MATCAP2", material.GetTexture("_MatCap2Tex") != null && material.GetColor("_MatCap2Color").a > 0f);
             SetKeyword(material, "_NORMALMAP2", material.GetTexture("_Bump2Map") != null);
             Color emission = material.GetColor("_EmissionColor"), emission2 = material.GetColor("_Emission2Color");
@@ -733,9 +768,12 @@ namespace GalaxyToon.Editor
             for (int i = 1; i <= 3; i++) SetKeyword(material, "_LAYER" + i, material.GetTexture($"_Layer{i}Tex") != null);
             SetKeyword(material, "_HAIR_SHADOW", material.GetFloat("_HairShadowReceive") > 0f);
             SetKeyword(material, "_EYE", material.GetFloat("_UseEye") > 0.5f);
-            SetKeyword(material, "_GLITTER", material.GetColor("_GlitterColor").a > 0f);
+            SetKeyword(material, "_GLITTER", material.GetColor("_GlitterTint").a > 0f);
             SetKeyword(material, "_REFRACTION", transparent && material.GetFloat("_RefractionStrength") > 0f);
             SetKeyword(material, "_NEAR_FADE", material.GetFloat("_UseNearFade") > 0.5f);
+            if (material.HasProperty("_UseNetDent")) SetKeyword(material, "_NET_DENT", material.GetFloat("_UseNetDent") > 0.5f);
+            if (material.HasProperty("_UseSss")) SetKeyword(material, "_SSS", material.GetFloat("_UseSss") > 0.5f && material.GetColor("_SssColor").a > 0f);
+            if (material.HasProperty("_UseSheer")) SetKeyword(material, "_SHEER", material.GetFloat("_UseSheer") > 0.5f && material.GetFloat("_SheerAmount") > 0f);
             material.SetShaderPassEnabled("SRPDefaultUnlit", !transparent && material.GetFloat("_OutlineWidth") > 0f); // 輪郭線(太さ 0 なら描画そのものをしない)
             material.SetShaderPassEnabled("ShadowCaster", !transparent);
             material.SetShaderPassEnabled("DepthOnly", !transparent);

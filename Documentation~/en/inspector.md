@@ -91,7 +91,7 @@ Press **Off** next to a texture to remove it temporarily without reassigning it.
 Type in the search field to show only matching settings, grouped by section.
 
 - Separate words with spaces to show only settings that contain all of them.
-- You can search by setting name (Japanese or English), internal name (such as `_ShadowColor`), or section name.
+- You can search by setting name (Japanese or English), internal name (such as `_Shade1Tint`), or section name.
 - Case is ignored.
 
 ## Expand, Collapse, and Reset

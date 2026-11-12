@@ -9,7 +9,7 @@ namespace GalaxyToon.Editor
     /// 「白目のサブメッシュの範囲の中に丸ごと収まる、顔サブメッシュの島」を瞳とみなし、その UV の範囲を使う。</summary>
     public static class GalaxyToonEyeFinder
     {
-        [MenuItem("Tools/GalaxyToon/瞳の範囲を探す (選択中のキャラ)")]
+        [MenuItem("Tools/GalaxyToon/瞳の範囲を探す (選択中のキャラ)", false, 21)]
         private static void FindSelected()
         {
             int n = 0;
@@ -27,7 +27,7 @@ namespace GalaxyToon.Editor
             if (n == 0) Debug.LogWarning("[瞳] 見つかりませんでした。顔(肌)と白目が同じ SkinnedMeshRenderer の別サブメッシュで、白目のマテリアル名に Sclera か Eye が入っている必要があります。");
         }
 
-        [MenuItem("Tools/GalaxyToon/頬の位置を探す (選択中のキャラ)")]
+        [MenuItem("Tools/GalaxyToon/頬の位置を探す (選択中のキャラ)", false, 22)]
         private static void FindCheeksSelected()
         {
             int n = 0;
@@ -50,7 +50,7 @@ namespace GalaxyToon.Editor
             Mesh mesh = smr.sharedMesh; Material[] mats = smr.sharedMaterials;
             if (mesh == null || mats.Length < 2) return false;
             int sclera = -1, skinSub = -1;
-            for (int i = 0; i < mats.Length; i++)
+            for (int i = 0; i < Mathf.Min(mats.Length, mesh.subMeshCount); i++) // マテリアルがサブメッシュより多いとき、余りは同じメッシュを重ねて描くだけ
             {
                 if (mats[i] == null) continue;
                 string n = mats[i].name.ToLowerInvariant();
@@ -108,7 +108,8 @@ namespace GalaxyToon.Editor
             Material[] mats = smr.sharedMaterials;
             if (mesh == null || mats.Length < 2) return false;
             int sclera = -1;
-            for (int i = 0; i < mats.Length; i++)
+            int subCount = Mathf.Min(mats.Length, mesh.subMeshCount);
+            for (int i = 0; i < subCount; i++)
             {
                 if (mats[i] == null) continue;
                 string n = mats[i].name.ToLowerInvariant();
@@ -119,7 +120,7 @@ namespace GalaxyToon.Editor
             }
             if (sclera < 0) return false;
             int irisSub = -1;
-            for (int i = 0; i < mats.Length; i++)
+            for (int i = 0; i < subCount; i++)
             {
                 if (mats[i] == null || !mats[i].HasProperty("_EyeRect1")) continue;
                 string n = mats[i].name.ToLowerInvariant();
@@ -150,7 +151,7 @@ namespace GalaxyToon.Editor
                 eye.Encapsulate(eye.center + smr.transform.root.forward * 0.04f); // 瞳は白目より少し手前(角膜側)にあるので、前方向に余裕を持たせる
                 // 白目以外の三角形を島(頂点のつながり)に分け、白目の範囲に丸ごと入る島の UV 範囲をまとめる
                 var triList = new List<int>(); var triSub = new List<int>();
-                for (int sm = 0; sm < mesh.subMeshCount; sm++) { if (sm == sclera || mats[sm] == null || !mats[sm].HasProperty("_EyeRect1") || (irisSub >= 0 && sm != irisSub)) continue; int[] st = mesh.GetTriangles(sm); triList.AddRange(st); for (int k = 0; k < st.Length; k++) triSub.Add(sm); }
+                for (int sm = 0; sm < subCount; sm++) { if (sm == sclera || mats[sm] == null || !mats[sm].HasProperty("_EyeRect1") || (irisSub >= 0 && sm != irisSub)) continue; int[] st = mesh.GetTriangles(sm); triList.AddRange(st); for (int k = 0; k < st.Length; k++) triSub.Add(sm); }
                 int[] tri = triList.ToArray();
                 // 同じ位置・同じ UV の頂点は1つとみなしてつなぐ(三角形ごとに頂点が分かれたメッシュでも島になる。UV の継ぎ目では分かれる)
                 var weld = new Dictionary<(Vector3Int, Vector2Int), int>();

@@ -29,6 +29,8 @@ Stepped gloss for hair, eyes, metal, and so on. Turns on when the color alpha is
 | Highlight Color | Color. Alpha is strength |
 | Highlight Size | Size of the lit area |
 | Highlight Blur | Edge blur. 0 = crisp |
+| Specular Mask | Only white areas in R shine (e.g. only buckles or leather) |
+| Specular Shadow Mask | At 0, metal and leather keep a dull shine even in shadow |
 | Highlight Ramp | Gradient image: left = outer edge, right = center. Paint the highlight shape (steps, stripes) and color. Rows are shared with the shadow ramp |
 
 ### MatCap
@@ -60,6 +62,15 @@ Section **Anisotropic Highlight (Hair Angel Ring)**. A long, thin highlight alon
 | Anisotropic Blur | Edge blur |
 | Hide Anisotropic Highlight in Shadow | How much it is weakened in shadow |
 | Shape the Angel Ring with the Highlight Ramp | When ON, the ring's shape and color come from the Highlight Ramp |
+| Angel Ring Jitter Strength / Scale | Makes the ring wave up and down along the strands |
+| Second Angel Ring Color / Shift / Sharpness | Adds a thinner secondary ring (A is the strength) |
+| Ring Mode | **Anisotropic**: ring from hair flow and light (as before)<br>**MatCap**: ring from the view direction (a sphere with a ring drawn in "Ring Texture")<br>**UV2 Band**: a band along the second UV (shifts with view height)<br>**Hair Map R**: the hair map R limits the ring area |
+| Ring Texture / Ring Offset / Ring View Shift | Used by the MatCap and UV2 band modes |
+| Hair Map (HM) | G = strand shading (darker = shadow), R = angel ring area. Neutral point and strength decide how much the painted strands override the light |
+
+| <img src="../Images/82_Dual_Angel_Ring.png" width="320" alt="Dual Angel Ring"> | <img src="../Images/83_Angel_Ring_MatCap.png" width="320" alt="Angel Ring (MatCap)"> |
+|---|---|
+| Dual Angel Ring | Angel Ring (MatCap) |
 | Wet Hair | When wet, hair clumps into strands, the gaps darken, and the angel ring gets thin and sharp. The amount is the Wet value |
 | Wet Hair Clump Density | Number of clumps (per UV unit) |
 
@@ -87,6 +98,8 @@ Lights the inner edge of the silhouette. Turns on when the color alpha is above 
 | Rim Blur | Edge blur |
 | Rim Thinness | Higher values give a thinner rim |
 | Hide Rim in Shadow | How much it is weakened in shadow |
+| Rim Light Align | 1 = only the silhouette on the lit side, -1 = only the opposite side, 0 = all around |
+| Rim Opposite Color | Adds a differently colored bounce rim on the shadow side (A is the strength) |
 | Depth Rim | When ON, uses the depth texture to light only the silhouette edge (not bumps inside the body) |
 | Depth Rim Width | Width of the lit edge (cm) |
 | Depth Rim Depth Threshold | Treated as an edge when the object behind is farther than this (m) |

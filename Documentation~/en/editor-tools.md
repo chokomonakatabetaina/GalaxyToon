@@ -13,12 +13,17 @@ The tools in the **Tools > GalaxyToon** menu. They all run only in the Editor an
 | [Bake Smooth Outline Normals](#bake-smooth-outline-normals) | 輪郭線用のなめらか法線を焼く | Keeps outlines from breaking at corners | `GalaxyToonOutlineNormalBaker.cs` |
 | [Create SDF Shadow Map](#create-sdf-shadow-map) | SDF 影マップを作る | Creates SDF shadow maps for the face, hair, or body | `GalaxyToonSdfBaker.cs` |
 | [Create Ramp Templates](#create-ramp-templates) | ランプのひな形を作る | Creates shadow / highlight ramp images | `GalaxyToonRampTemplate.cs` |
+| [Ramp Editor](#ramp-editor) | ランプを編集・作成する | Builds shadow / highlight ramps from gradients | `GalaxyToonRampTemplate.cs` |
+| [Create Thickness Map](#create-thickness-map) | 厚みマップを作る | Builds the SSS thickness mask from the mesh | `GalaxyToonThicknessBaker.cs` |
 | [See-Through Bangs](#see-through-bangs) | 前髪を透過する | Adds the see-through bangs component to a character | `GalaxyToonSeeThroughBangsMenu.cs` |
 | [Enable Hair Shadow](#enable-hair-shadow) | 髪の影を有効にする | Adds the hair shadow feature to the URP Renderers in use | `GalaxyToonTools.cs` |
+| [Enable Volume](#enable-volume) | Volume を有効にする | Adds the Volume feature to the URP Renderers in use | `GalaxyToonTools.cs` |
 | [Clean Up All Materials](#clean-up-all-materials) | 全マテリアルの機能を整理 | Removes keywords of unused features | `GalaxyToonTools.cs` |
 | [Feature Usage Report](#feature-usage-report) | 使っている機能の一覧 | Prints feature combinations to the Console | `GalaxyToonTools.cs` |
 | [Shader OFF](#shader-off) | シェーダー OFF | Compares with URP Lit (Ctrl+Shift+T) | `GalaxyToonTools.cs` |
 | [Measure Performance](#measure-performance) | 負荷を測る | Measures frame time per feature | `GalaxyToonPerfSweep.cs` |
+| [Full Parameter and Light Test](#full-parameter-and-light-test) | 全パラメータ・ライト反映フルテスト実行 | Checks that every feature affects the image | `GalaxyToonParameterTest.cs` |
+| [Property Sweep](#property-sweep) | 全項目の総当たりテスト | Finds Inspector properties that have no effect | `GalaxyToonPropertySweep.cs` |
 | Create Sample Scene | サンプルシーンを作る | Rebuilds the sample scene (see the [README](../../README.en.md#sample-scene)) | `GalaxyToonSampleSceneCreator.cs` |
 
 For the Inspector (`GalaxyToonGUI.cs` / `GalaxyToonText.cs`), see [Inspector](inspector.md).
@@ -27,7 +32,7 @@ For the Inspector (`GalaxyToonGUI.cs` / `GalaxyToonText.cs`), see [Inspector](in
 
 ## Migrate to GalaxyToon
 
-Converts materials from other shaders to `GalaxyShader/Toon` in one go. For a VRM (VRoid) character, select it and run the tool to also set up the face, eyes, outline, and hair shadow.
+Converts materials from other shaders to `GalaxyShader/Toon` in one go. For a VRM character, select it and run the tool to also set up the face, eyes, outline, and hair shadow.
 
 **How to use**
 
@@ -50,8 +55,8 @@ Converts materials from other shaders to `GalaxyShader/Toon` in one go. For a VR
 
 - A body-part preset (skin, face, hair, clothes, metal, face parts) is applied first, then the original values are copied on top, so the original shade colors and outlines win.
 - MToon and UTS store the shadow color itself, so it is divided by the base color to get GalaxyToon's "color multiplied onto the base".
-- Tiny placeholder textures (the 8×8 matcap and flat normal map that VRoid assigns) and normal maps with a strength of 0 are not copied, so unused features add no cost.
-- Part guessing also understands VRoid names (`Face_00_SKIN`, `HairBack_00_HAIR`, `EyeWhite_00_EYE`, `Tops_01_CLOTH`, etc.).
+- Tiny placeholder textures (such as an 8×8 matcap or a flat normal map) and normal maps with a strength of 0 are not copied, so unused features add no cost.
+- Part guessing also understands names common in VRM characters (`Face_00_SKIN`, `HairBack_00_HAIR`, `EyeWhite_00_EYE`, `Tops_01_CLOTH`, etc.).
 
 **Settings**
 
@@ -193,6 +198,44 @@ Creates two ramp image templates at once, for shadows and highlights. Each has f
 
 They are imported without mipmaps or compression so the rows don't bleed into each other. Repaint them in an image editor.
 
+## Ramp Editor
+
+A window that edits per-part shadow and highlight ramps as Unity gradients and saves them as PNG. You can see the colors on the material while editing; no image editor is needed.
+
+**How to use**
+
+1. Open **Tools > GalaxyToon > ランプを編集・作成する (リアルタイム・グラデーション)** (Ramp Editor).
+2. Pick the target renderer (or material) and which ramp to edit (shadow / highlight).
+3. Set the number of rows (body parts, 1–8) and edit the gradient for each row.
+4. Choose where to save and press **PNG に保存してマテリアルに反映** (Save PNG and apply). The ramp and row count are set on the material.
+
+| Setting | Description |
+|---|---|
+| Target Renderer / Material / Material to apply | The material that shows the edited colors |
+| Ramp to edit | Shadow ramp or highlight ramp |
+| Rows (number of parts) | Rows stacked vertically. Defaults: skin (with a warm band at the shadow border) / hair / clothes / metal |
+| Live preview on material | Puts the temporary texture on the material while you edit |
+| Save path (.png) | Where to save |
+
+## Create Thickness Map
+
+Builds the "Thickness / SSS Mask" for SSS (skin translucency) from the mesh shape. Areas that are thin from the surface to the opposite side (ears, fingertips, nose tips) become white.
+
+**How to use**
+
+1. Open **Tools > GalaxyToon > 厚みマップを作る (SSS・肌透け用)** (Create Thickness Map).
+2. Pick the target renderer and material (submesh), then create.
+
+| Setting | Description |
+|---|---|
+| Target Renderer / Material (submesh) | Only the part used by this material |
+| Resolution | Image size |
+| Thin threshold | Areas thinner than this (cm) become white |
+| Minimum for thick areas | Keeps some warm border bleed on thick areas such as cheeks and the torso. 0–0.1 for back-lit ears only |
+| Smoothness | Blurs the thickness between vertices to hide polygon edges |
+| Save path | Where to save the PNG |
+| Apply to material | After creating, assigns it to "Thickness / SSS Mask" and turns SSS on |
+
 ## See-Through Bangs
 
 Adds **GalaxyToonSeeThroughBangs** to the root of the selected character. In Play mode, the tips of the bangs become semi-transparent with a gradient, so brows and eyes show through.
@@ -213,6 +256,10 @@ Adds **GalaxyToonSeeThroughBangs** to the root of the selected character. In Pla
 Adds **GalaxyHairShadowFeature** to the URP Renderers used by the project (the renderers of the Graphics default pipeline asset and of each quality level's pipeline asset). Renderers that already have it are left unchanged. The result is printed to the Console.
 
 Hair shadows also need **GalaxyToonFace** on the character root and the hair / face presets ([Face, Eyes, Hair](shader-face-hair.md#hair-shadow)).
+
+## Enable Volume
+
+**Tools > GalaxyToon > Volume を有効にする (使っている URP Renderer に追加)** (Enable Volume) adds **Galaxy Toon Volume Feature** to the URP Renderers in use (default and every quality level). Renderers that already have it are left alone. Run it before using the "Galaxy Toon" Volume ([Screen Effects, Audio, Volume](rendering.md#galaxy-toon-volume)), including the Volume buttons in the sample scene.
 
 ## Clean Up All Materials
 
@@ -266,3 +313,14 @@ Measures GPU and CPU frame time in the playing scene while turning features off 
 Each stage warms up for 1 second and measures for 3 seconds. SetPass calls, draw calls, and triangle counts are recorded too.
 
 > The post-effect stages are measured only when depth of field / bloom are enabled in the scene's Volume.
+
+## Full Parameter and Light Test
+
+**Tools > GalaxyToon > 開発用 > 全パラメータ・ライト反映フルテスト実行** (Full Parameter and Light Test) automatically checks that every GalaxyShader/Toon feature and the light direction actually change the pixels on screen. It renders off-screen and compares the pixels before and after each change. Results go to the Console; the scene is not changed.
+
+## Property Sweep
+
+**Tools > GalaxyToon > 開発用 > 全項目の総当たりテスト(効いていない項目を探す)** (Property Sweep) moves every Inspector property one at a time by a large amount and checks whether the rendered sphere changes. For each section it first sets up the state the feature needs (toggle on, opaque color, a placeholder texture for masks). Properties that made no difference are listed in the Console.
+
+- The stencil and properties that need other components (such as the hair shadow Renderer Feature) are skipped.
+- Use it after modifying the shader. It is not needed for everyday work.

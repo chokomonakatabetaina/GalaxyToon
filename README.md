@@ -2,7 +2,17 @@
 
 日本語 | [English](README.en.md)
 
-URP 用のトゥーンシェーダーです。段影・リム・マットキャップ・輪郭線に加えて、瞳・頬染め・髪の影、濡れ・汗・液体・雨、ラメ・屈折、ディゾルブ・転送などを 1 つのシェーダーで扱えます。
+**アニメの顔から、雨に濡れた髪、触れるとへこむ肌まで。1 本のシェーダーで。**
+
+URP 用のトゥーンシェーダーです。段影・リム・マットキャップ・輪郭線に加えて、瞳・頬染め・髪の影、濡れ・汗・液体・雨、ラメ・屈折、ディゾルブ・転送、触れるとへこむ肌などを 1 つのシェーダーで扱えます。
+
+### GalaxyToon のここが違う
+
+- **キャラ 1 体ぶんが 1 本で済む**：顔（SDF 影・首の向きへの追従・鼻線）、瞳（奥行き・うるうる・きらめき）、髪（天使の輪 2 本・前髪の影・毛先の色）、肌（血色のにじみ・逆光の透け）、服（ラテックス・ストッキング・金属）まで、シェーダーを替えずに作れる。
+- **使わない機能は計算もビルドもしない**：機能ごとのキーワードで切り替える。使っていない機能は、組み合わせごと消える。負荷を 1 つずつ測るツールも付いている。
+- **ほかのシェーダーからそのまま移れる**：MToon（VRM）・lilToon・UTS・URP Lit のキャラを、顔・瞳・輪郭線・髪の影までまとめて移す。
+- **ゲームの中で動く表現**：濡れ・汗・雨・涙・糸・転送・触れるとへこむ肌（GPU で 32 か所まで）を、スクリプトから量を変えて動かせる。
+- **日本語の Inspector とプリセット**：部位（肌・顔・髪・服・金属）を選ぶだけで、それらしい値がまとめて入る。英語にも切り替えられる。
 
 Author: @matechagame
 
@@ -72,7 +82,7 @@ Author: @matechagame
 
 ### ほかのシェーダーから移る(MToon・lilToon など)
 
-VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` を開いて **移行する** を押すと、まとめて GalaxyToon に切り替わります。
+VRM などのキャラは、ヒエラルキーでキャラを選び、`Tools > GalaxyToon > GalaxyToon に移行 (MToon・lilToon・Lit など)` を開いて **移行する** を押すと、まとめて GalaxyToon に切り替わります。
 
 - 対応: MToon(VRM 0.x / 1.0)・lilToon・UTS・URP Lit / Unlit・Standard
 - 部位(肌・顔・髪・服・顔パーツなど)をマテリアル名から推測してプリセットを当て、元の色・影色・輪郭線を写します。
@@ -85,9 +95,73 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 
 前髪の影を顔に落とすには、`Tools > GalaxyToon > 髪の影を有効にする` で使っている URP Renderer に **Galaxy Hair Shadow Feature** を追加し(Renderer の Add Renderer Feature から手で足しても同じです)、キャラのルートに **Galaxy Toon Face** を付けます。髪のマテリアルはプリセット「髪の影を落とす」、顔・瞳は「髪の影を受ける」にします。
 
+### 網タイツの食い込み
+
+肌のマテリアルの「網タイツの食い込み」をオンにすると、地のテクスチャに描かれた網(暗い線、またはアルファ)で肌が押され、網目の間がふくらんで見えます(法線と色の両方で表すので、アニメ塗りでも見えます)。食い込みの幅・深さ・網の際の影・網目のふくらみを変えられ、`_NetDentMask` で出す範囲を絞れます。
+
 ### キャラ専用ライト(任意)
 
 **Galaxy Toon Light** を置くと、そのオブジェクトの前方へ向かう光がキャラ専用の光源になります。置かなければシーンのメインライトで描きます。
+「対象」にキャラを入れると、そのキャラだけを照らします(キャラごとに光の向き・色を変えられます)。「夜の量」は、昼／夜のランプを混ぜる量です。
+
+### トゥーンの強化(既定はすべてオフ)
+
+Inspector の「トゥーンの強化」にまとめています。オンにしたものだけ効きます。
+
+| 項目 | 内容 |
+|---|---|
+| 光の色の正規化・明るさの上限をなめらかに | 暗い色のライトでも塗りが暗くならない。明るすぎる所は急に頭打ちにしない |
+| 影の側を空の色に寄せる | 環境光(SH)の色味を影の所だけに掛ける。夕焼け・青空で影が空の色になる |
+| 落ち影を受ける位置のずらし | 顔・体の自己影の汚れを減らす |
+| 追加ライトの調整 | 面の向きを見ずに距離だけで明るく、専用の境界・上限・灰色化 |
+| リムシェード・やわらかい深度リム | 輪郭の内側を掛け算で締める。深度リムを 3 か所で読んでなめらかに |
+| マットキャップの補正 | 画面の端の歪み・カメラの傾きを直す。マスク付き |
+| 深度だけ手前へ・遠近の除去 | 眉・目のふちを髪の手前に。広角で寄っても顔がゆがまない(頭の中心は Galaxy Toon Face が入れる) |
+| 全体のディザ透明度 | 出入り・遮蔽物の向こうで、全パス同じ網目で抜く |
+| 昼／夜のランプ | ランプの上半分を昼、下半分を夜として混ぜる |
+| 髪のハイライトの形・チラつきを抑える | 正面は丸く、縁は細長く。遠い所の点滅を抑える |
+| 発光の色の移り変わり・見る角度の色 | 時間で色相を回す。縁ほど別の色 |
+| 虹色の薄膜 | 見る角度で色相が回る(シャボン・油膜・玉虫) |
+| 頂点カラーの意味 | R＝影の出やすさ、G＝境界のずらし、B＝輪郭線を奥へ、A＝輪郭線の太さ |
+| 輪郭線を光の側で太く・遠いと消す | 光の当たる輪郭を強く。遠くのキャラの線がつぶれない |
+| 接地影 | 画面の深度を光の向きへたどって、指・襟の接点に細い影 |
+| 星空 | 画面に貼りつく星を 3 層、視差と瞬き、星雲の色(マスクの所だけ) |
+| 鼻線 | 横顔のときだけ鼻筋に線(マスクは顔テクスチャに合わせて描く) |
+| 影専用の法線 | UV7 に入れた法線を光の当たり具合にだけ使う(ハイライト・リムは元の法線) |
+| パック型マスク | R＝ハイライトの強さ、G＝影のしきい値、B＝ハイライトのマスク、A＝素材 ID。ID ごとにリム・輪郭線・光る色 |
+
+### 触れるとへこむ
+
+Inspector の「触れるとへこむ」をオンにし、触れるもの(カプセル)を MaterialPropertyBlock の `_SoftContactA`・`_SoftContactB`・`_SoftContactCount` で渡すと、頂点の段階で肌がへこみます(最大 32 か所。全パスで同じ形なので、影・輪郭線もへこむ)。
+
+- まわりがなめらかに沈み、外側は少し盛り上がる(体積を保つ)。
+- マスクの R＝やわらかさ、G＝肉の厚み、B＝平らさ(丸い所ほどへこみが面に沿う)。
+- 押した所の血色と、近づくものの影も出る。
+
+### 音に反応する
+
+**Galaxy Audio React** を置くと、鳴っている音を低音・中音・高音に分けて測り、グローバル値 `_GalaxyAudio` に入れます。
+マテリアルの「トゥーンの強化」で帯域を選び、「音で発光を強める量」「音でリムを強める量」「音で輪郭線を太くする量」を上げると、音に合わせて光る・線が太くなります。
+
+### 天使の輪の作り方
+
+「異方性ハイライト」の「天使の輪の作り方」で、髪の流れと光で決まる輪(今まで)のほかに、マットキャップ(見る向きで決まる輪。`_RingTex` に輪を描いた球)と、UV2 の帯(2 番目の UV に沿った帯。見る高さでずれる)を選べます。
+
+### 画面の効果(レンダラー機能)
+
+URP のレンダラー(Universal Renderer Data)の「Add Renderer Feature」から足します。
+
+| 機能 | 内容 |
+|---|---|
+| Galaxy Screen Line | 深度と法線の差で、外形の線と内側の線(指・重なり・部位の境目)を描く。線はシルエットの外側に出るのでキャラが痩せない。押し出しの輪郭線と一緒に使える |
+| Galaxy Glow | 明るい所だけをやわらかくにじませる拡散グロー。ブルームとは別に調整できる |
+| Galaxy Character Shadow | キャラだけを囲む狭い範囲で、高解像度の影を描く。前髪・指・襟・顎の自己影がくっきり出る。キャラ専用の固定ライトにも影が付く |
+| Galaxy Toon Volume Feature | Volume の「Galaxy Toon」(リム・影を暗く・影の色・彩度・明るさ・線の太さ)を全キャラに当てる。場面・時間帯ごとに Volume で切り替えられる |
+| Galaxy Paint | 塗りのムラをならし(桑原フィルタ)、明るさを段にする。色相は変えない。背景向け |
+
+### 動きのベクトル
+
+TAA・STP・モーションブラー用の MotionVectors パスがあります(動くキャラがぶれません)。
 
 ## コンポーネント
 
@@ -95,8 +169,8 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 
 | コンポーネント | 用途 |
 |---|---|
-| Galaxy Toon Light | キャラ専用の固定ライト(任意) |
-| Galaxy Toon Face | 首の向きに顔の陰影・SDF 影・髪の影を合わせる |
+| Galaxy Toon Light | キャラ専用の固定ライト(任意)。キャラ 1 体だけにも当てられる |
+| Galaxy Toon Face | 首の向きに顔の陰影・SDF 影・髪の影を合わせる。高さの毛先・遠近の除去の中心も入れる |
 | Galaxy Toon Effects | 濡れ・汗・液体・泡・雨・汚れ・傷・頬染めの量をゲーム中に動かす |
 | Galaxy Toon Hair Sway | ボーンの無い髪を揺らす |
 | Galaxy Toon Fur | 毛(シェル法)を生やす。マテリアルは `GalaxyShader/ToonFur` |
@@ -105,7 +179,10 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 | Galaxy Tongue Drip | 舌先から液を垂らす |
 | Galaxy Sticky Strings | 2 点の間に伸びて切れる糸を引く |
 | Galaxy Teleport | 転送・ワープで消える / 現れる / 服を入れ替える |
+| Galaxy Audio React | 鳴っている音を低音・中音・高音に分けて測り、発光・リム・輪郭線を音に合わせる |
 | Galaxy Hair Shadow Feature | 髪の影を描く URP Renderer Feature |
+| Galaxy Character Shadow / Screen Line / Glow / Paint / Toon Volume Feature | 画面の効果の URP Renderer Feature([画面の効果](#画面の効果レンダラー機能)) |
+| Galaxy Toon Sample Contact | サンプル用。触れるとへこむ・脚に押される布・スカートの影に値を渡す見本 |
 
 ## メニュー
 
@@ -113,15 +190,19 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 
 | メニュー | 内容 |
 |---|---|
-| GalaxyToon に移行 (MToon・lilToon・Lit など) | ほかのシェーダーのマテリアルを GalaxyToon に移す。VRM(VRoid)のキャラは顔・瞳・輪郭線・髪の影までまとめて設定 |
+| GalaxyToon に移行 (MToon・lilToon・Lit など) | ほかのシェーダーのマテリアルを GalaxyToon に移す。VRM のキャラは顔・瞳・輪郭線・髪の影までまとめて設定 |
 | サンプルシーンを作る (機能ごとの球) | `Samples/` のサンプルシーンを作り直す |
 | 髪の影を有効にする | 使っている URP Renderer に Galaxy Hair Shadow Feature を足す |
+| Volume を有効にする | 使っている URP Renderer に Galaxy Toon Volume Feature を足す |
 | 瞳の範囲を探す / 頬の位置を探す | 選択中のキャラから瞳・頬の UV を探してマテリアルに入れる |
 | 前髪を透過する | 選択中のキャラに Galaxy Toon See-Through Bangs を付ける |
 | 輪郭線用のなめらか法線を焼く | 輪郭線が割れないように、なめらかな法線を焼く |
 | SDF 影マップを作る | 顔・髪・体の SDF 影マップを作る |
 | ノーマルマップを作る | テクスチャからノーマルマップを作る |
 | ランプのひな形を作る | 影・ハイライトのランプ(部位 4 段)を作る |
+| ランプを編集・作成する | グラデーションで影・ハイライトのランプを編集し、マテリアルに映しながら作る |
+| 厚みマップを作る | SSS(肌の透け)用の厚みマスクを、メッシュの形から作る |
+| 開発用 > 全パラメータ・ライト反映フルテスト / 全項目の総当たりテスト | シェーダーの全機能・全項目が画面に効いているかを自動で確かめる(改造したとき用) |
 | 全マテリアルの機能を整理 | 効いていない機能のキーワードを外す |
 | 使っている機能の一覧 | 全マテリアルの機能の組み合わせと使用数を Console に出す |
 | 負荷を測る | 再生中のシーンで機能を 1 つずつ切って、GPU / CPU の時間を測る |
@@ -129,9 +210,9 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 
 ## サンプルシーン
 
-`Samples/GalaxyToon_FeatureSamples.unity` を開いて再生します。画面下の「◀ 前へ / 次へ ▶」(または ← → キー)で 1 つずつ寄って見られます。「全体」(Home キー)で全体に戻ります。
+`Samples/GalaxyToon_FeatureSamples.unity` を開いて再生します。画面下の「◀ 前へ / 次へ ▶」(または ← → キー)で 1 つずつ寄って見られます。見本の球をクリックすると、その見本へ寄ります。ダブルクリックすると、その見本の素材をプレビューのモデルに着せて、モデルへ寄ります。はじめは左のプレビューのモデル(Blender のサル)を大きく映します。画面下の「素材」の ◀ ▶ で、どの見本の素材にも着せ替えられます。モデルはマウスでドラッグすると回せ、ホイールで寄れます。横の小さい球をつかんで動かせます。素材が「押せる肌」(はじめの素材)なら、モデルに押し当てると肌がへこみます。「糸」なら、押し当ててから引き離すと、触れた所から糸を引きます。右側のボタンで、Volume(Galaxy Toon)のプリセット(オフ・標準・夕方・夜・パステル・くっきり)とライト(昼・夕方・夜・逆光・真上・真横)を切り替えられ、その下のスライダーでライトの明るさ、色の四角で背景の色を変えられます。Volume は先に `Tools > GalaxyToon > Volume を有効にする` を実行してください。「全体」(Home キー)で全体に戻ります。
 
-涙・糸・転送・髪の揺れ・毛・雨は再生中に動きます。「髪の影」の球は、先に `Tools > GalaxyToon > 髪の影を有効にする` を実行しておくと影が出ます。シーンは `Tools > GalaxyToon > サンプルシーンを作る` でいつでも作り直せます。Package Manager から入れた場合はパッケージの中に書き込めないので、`Assets/GalaxyToon Samples/` に作ります。
+涙・糸・転送・髪の揺れ・毛・雨・触れるとへこむ・脚に押される布は再生中に動きます。1.0.2 で、新しい機能の見本を 4 行(30 個)足しました。「接地影」の球は、カメラの深度テクスチャが要ります。「髪の影」の球は、先に `Tools > GalaxyToon > 髪の影を有効にする` を実行しておくと影が出ます。シーンは `Tools > GalaxyToon > サンプルシーンを作る` でいつでも作り直せます。Package Manager から入れた場合はパッケージの中に書き込めないので、`Assets/GalaxyToon Samples/` に作ります。
 
 ## 機能一覧
 
@@ -201,6 +282,38 @@ VRM(VRoid)などのキャラは、ヒエラルキーでキャラを選び、`Too
 | <img src="Documentation~/Images/61_Near_Fade.png" width="240" alt="Near Fade"> | <img src="Documentation~/Images/62_Stencil.png" width="240" alt="Stencil"> | <img src="Documentation~/Images/63_Toon_vs_URP_Lit.png" width="240" alt="Toon vs URP Lit"> | <img src="Documentation~/Images/64_GalaxyTears_viscous.png" width="240" alt="GalaxyTears (viscous)"> |
 | **近づくと透ける**<br>Near Fade | **ステンシル**<br>Stencil | **左 Toon / 右 Lit**<br>Toon vs URP Lit | **白い液 どろどろ**<br>GalaxyTears (viscous) |
 
+### 質感 2 — Surface 2
+
+| <img src="Documentation~/Images/65_SSS.png" width="240" alt="SSS"> | <img src="Documentation~/Images/66_Sheer_Stockings.png" width="240" alt="Sheer Stockings"> | <img src="Documentation~/Images/67_Fishnet_Dent.png" width="240" alt="Fishnet Dent"> | <img src="Documentation~/Images/68_Clear_Coat.png" width="240" alt="Clear Coat"> |
+|---|---|---|---|
+| **SSS (血色・透け)**<br>SSS | **ストッキング**<br>Sheer Stockings | **網タイツの食い込み**<br>Fishnet Dent | **クリアコート**<br>Clear Coat |
+| <img src="Documentation~/Images/69_Velvet.png" width="240" alt="Velvet"> | <img src="Documentation~/Images/70_Iridescence.png" width="240" alt="Iridescence"> | <img src="Documentation~/Images/71_Starry.png" width="240" alt="Starry"> | <img src="Documentation~/Images/72_Hair_Tip_Gradient.png" width="240" alt="Hair Tip Gradient"> |
+| **ベルベット**<br>Velvet | **虹色の薄膜**<br>Iridescence | **星空**<br>Starry | **毛先のグラデーション**<br>Hair Tip Gradient |
+
+### 影 2 — Shadow 2
+
+| <img src="Documentation~/Images/73_Shade_Map.png" width="240" alt="Shade Map"> | <img src="Documentation~/Images/74_Shadow_Bias_Mask.png" width="240" alt="Shadow Bias Mask"> | <img src="Documentation~/Images/75_Shadow_Pattern.png" width="240" alt="Shadow Pattern"> | <img src="Documentation~/Images/76_Hatching.png" width="240" alt="Hatching"> |
+|---|---|---|---|
+| **影色テクスチャ**<br>Shade Map | **影の出やすさマスク**<br>Shadow Bias Mask | **影の模様**<br>Shadow Pattern | **ハッチング**<br>Hatching |
+| <img src="Documentation~/Images/77_Halftone.png" width="240" alt="Halftone"> | <img src="Documentation~/Images/78_Fill_Light.png" width="240" alt="Fill Light"> | <img src="Documentation~/Images/79_Contact_Shadow.png" width="240" alt="Contact Shadow"> | <img src="Documentation~/Images/80_Skirt_Shadow.png" width="240" alt="Skirt Shadow"> |
+| **網点**<br>Halftone | **カメラからの補助光**<br>Fill Light | **接地影**<br>Contact Shadow | **スカートの影**<br>Skirt Shadow |
+
+### 瞳・髪・リム 2 — Eyes / Hair / Rim 2
+
+| <img src="Documentation~/Images/81_Eyelid_Shadow_Caustic.png" width="240" alt="Eyelid Shadow / Caustic"> | <img src="Documentation~/Images/82_Dual_Angel_Ring.png" width="240" alt="Dual Angel Ring"> | <img src="Documentation~/Images/83_Angel_Ring_MatCap.png" width="240" alt="Angel Ring (MatCap)"> | <img src="Documentation~/Images/84_Rim_Toward_Light.png" width="240" alt="Rim Toward Light"> |
+|---|---|---|---|
+| **まぶたの影・光の溜まり**<br>Eyelid Shadow / Caustic | **天使の輪 2本**<br>Dual Angel Ring | **天使の輪 (マットキャップ)**<br>Angel Ring (MatCap) | **リムを光の側へ**<br>Rim Toward Light |
+| <img src="Documentation~/Images/85_Opposite_Rim.png" width="240" alt="Opposite Rim"> | <img src="Documentation~/Images/86_Rim_Shade.png" width="240" alt="Rim Shade"> | <img src="Documentation~/Images/87_Color_Trace_Outline.png" width="240" alt="Color Trace Outline"> | <img src="Documentation~/Images/88_Outline_Boil.png" width="240" alt="Outline Boil"> |
+| **影側の環境リム**<br>Opposite Rim | **リムシェード**<br>Rim Shade | **色トレスの輪郭線**<br>Color Trace Outline | **輪郭線のゆらぎ**<br>Outline Boil |
+
+### 形・発光 2 — Shape / Emission 2
+
+| <img src="Documentation~/Images/89_Inflate.png" width="240" alt="Inflate"> | <img src="Documentation~/Images/90_Soft_Touch.png" width="240" alt="Soft Touch"> | <img src="Documentation~/Images/91_Leg_Push.png" width="240" alt="Leg Push"> | <img src="Documentation~/Images/92_Dither_Alpha.png" width="240" alt="Dither Alpha"> |
+|---|---|---|---|
+| **ふくらむ**<br>Inflate | **触れるとへこむ**<br>Soft Touch | **脚に押される布**<br>Leg Push | **全体のディザ透明度**<br>Dither Alpha |
+| <img src="Documentation~/Images/93_Emission_by_View_Angle.png" width="240" alt="Emission by View Angle"> | <img src="Documentation~/Images/94_Emission_Hue_Cycle.png" width="240" alt="Emission Hue Cycle"> |  |  |
+| **見る角度の発光**<br>Emission by View Angle | **発光の色の移り変わり**<br>Emission Hue Cycle |  |  |
+
 
 ## 詳しいドキュメント
 
@@ -215,9 +328,15 @@ Inspector の各項目・プリセット・ツールの説明は [日本語ド�
 | [ハイライト・リム・発光](Documentation~/ja/shader-highlight.md) | ハイライト・マットキャップ / 異方性 / 逆光 / リム / ラメ・屈折 / 発光 / レイヤー |
 | [濡れ・汗・液体・汚れ](Documentation~/ja/shader-surface-fx.md) | 濡れ / 汗 / 液体 / 泡 / 雨 / 汚れ・傷 |
 | [輪郭線・ディゾルブ・透け](Documentation~/ja/shader-outline-dissolve.md) | 輪郭線 / ディゾルブ / カメラが近いと透ける |
+| [肌・布の質感](Documentation~/ja/shader-skin-cloth.md) | SSS / ストッキング / 網タイツの食い込み / クリアコート・ベルベット |
+| [トゥーンの強化](Documentation~/ja/shader-toon-plus.md) | 光・影・リム・遠近・頂点カラー・接地影・星空・鼻線・パック型マスク・音 |
+| [形を変える・スクリプトから渡す値](Documentation~/ja/shader-shape.md) | ふくらむ / 脚に押される布 / 触れるとへこむ / スカートの影 / 後ろからの光 / 平面化 |
+| [画面の効果・音・Volume](Documentation~/ja/rendering.md) | Screen Line / Glow / Paint / Character Shadow / Toon Volume / Audio React |
 | [ファー](Documentation~/ja/shader-fur.md) | `GalaxyShader/ToonFur` |
 | [エディタツール](Documentation~/ja/editor-tools.md) | `Tools > GalaxyToon` メニューの全ツール |
 
 ## ライセンス
 
 [MIT License](LICENSE)
+
+サンプルの 3D モデル `Samples/Models/Monkey.obj` は、Blender に組み込まれているサルの形「Suzanne」(Add > Mesh > Monkey)を、Blender 5.2 でなめらかにして UV を付け、OBJ に書き出した物です(外からダウンロードしたモデルではありません)。Blender 本体は GPL ですが、Blender で作った物(組み込みの形を含む)は GPL の対象ではなく、作った人の物です([Blender のライセンス](https://www.blender.org/about/license/))。このモデルも、パッケージと同じ MIT License で配布します。
